@@ -29,8 +29,8 @@
 
 | Category | Technology |
 |----------|------------|
-| Language | Java 17 |
-| Framework | Spring Boot 3.5 |
+| Language | Java 23 |
+| Framework | Spring Boot 3.5.3 |
 | Database | PostgreSQL 17 |
 | ORM | Spring Data JPA + Hibernate |
 | Database Migration | Flyway |
