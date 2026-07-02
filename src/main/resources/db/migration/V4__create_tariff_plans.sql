@@ -1,8 +1,3 @@
--- =====================================================
--- AquaTrack
--- V4 - Create Billing Cycles Table
--- =====================================================
-
 CREATE TABLE tariff_plans (
 
     id BIGSERIAL PRIMARY KEY,
@@ -37,10 +32,6 @@ CREATE TABLE tariff_plans (
         ON DELETE CASCADE
 
 );
-
--- =====================================================
--- Indexes
--- =====================================================
 
 CREATE INDEX idx_tariff_apartment
 ON tariff_plans(apartment_id);
