@@ -16,7 +16,14 @@ ON DELETE SET NULL;
 
 ALTER TABLE users
 ADD CONSTRAINT chk_user_role
-CHECK (role IN ('ADMIN', 'RESIDENT'));
+CHECK (
+    role IN (
+        'SUPER_ADMIN',
+        'APARTMENT_ADMIN',
+        'MANAGER',
+        'RESIDENT'
+    )
+);
 
 CREATE INDEX idx_user_apartment
 ON users(apartment_id);
