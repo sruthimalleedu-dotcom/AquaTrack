@@ -293,7 +293,7 @@ Overall Progress
 
 - **Sanket Maity**
 - **Sruthi Malleedu**
-- **Navida **
+- **Navida Jain**
 
 ---
 
