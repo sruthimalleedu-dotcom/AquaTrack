@@ -291,8 +291,9 @@ Overall Progress
 
 # 👨‍💻 Contributors
 
-- **Sanket Maity** – Backend Development
-- **Sruthi Malleedu** – Project Collaboration
+- **Sanket Maity**
+- **Sruthi Malleedu**
+- **Navida **
 
 ---
 
