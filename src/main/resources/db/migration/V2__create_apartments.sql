@@ -1,8 +1,3 @@
--- ============================================
--- AquaTrack
--- V2 - Create Apartments Table
--- ============================================
-
 CREATE TABLE apartments (
 
     id BIGSERIAL PRIMARY KEY,
@@ -26,10 +21,6 @@ CREATE TABLE apartments (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 
 );
-
--- ============================================
--- Indexes
--- ============================================
 
 CREATE INDEX idx_apartment_city
 ON apartments(city);

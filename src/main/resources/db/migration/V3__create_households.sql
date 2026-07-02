@@ -1,8 +1,3 @@
--- ============================================
--- AquaTrack
--- V3 - Create Households Table
--- ============================================
-
 CREATE TABLE households (
 
     id BIGSERIAL PRIMARY KEY,
@@ -27,10 +22,6 @@ CREATE TABLE households (
         ON DELETE CASCADE
 
 );
-
--- ============================================
--- Indexes
--- ============================================
 
 CREATE INDEX idx_household_apartment
 ON households(apartment_id);

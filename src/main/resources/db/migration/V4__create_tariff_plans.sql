@@ -1,6 +1,6 @@
 -- =====================================================
 -- AquaTrack
--- V4 - Create Tariff Plans Table
+-- V4 - Create Billing Cycles Table
 -- =====================================================
 
 CREATE TABLE tariff_plans (

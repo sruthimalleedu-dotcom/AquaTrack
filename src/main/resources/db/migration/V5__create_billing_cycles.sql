@@ -1,8 +1,3 @@
--- =====================================================
--- AquaTrack
--- V5 - Create Billing Cycles Table
--- =====================================================
-
 CREATE TABLE billing_cycles (
 
     id BIGSERIAL PRIMARY KEY,
@@ -34,10 +29,6 @@ CREATE TABLE billing_cycles (
     CONSTRAINT chk_billing_status
         CHECK (billing_status IN ('OPEN','CLOSED'))
 );
-
--- =====================================================
--- Indexes
--- =====================================================
 
 CREATE INDEX idx_billing_apartment
 ON billing_cycles(apartment_id);

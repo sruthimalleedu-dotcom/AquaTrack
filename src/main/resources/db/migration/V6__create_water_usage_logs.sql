@@ -1,8 +1,3 @@
--- =====================================================
--- AquaTrack
--- V6 - Create Water Usage Logs Table
--- =====================================================
-
 CREATE TABLE water_usage_logs (
 
     id BIGSERIAL PRIMARY KEY,
@@ -29,9 +24,6 @@ CREATE TABLE water_usage_logs (
 
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    ---------------------------------------------------
-    -- Foreign Keys
-    ---------------------------------------------------
 
     CONSTRAINT fk_usage_household
         FOREIGN KEY (household_id)
@@ -48,9 +40,6 @@ CREATE TABLE water_usage_logs (
         REFERENCES users(id)
         ON DELETE SET NULL,
 
-    ---------------------------------------------------
-    -- Validation
-    ---------------------------------------------------
 
     CONSTRAINT chk_current_reading
         CHECK (current_reading >= previous_reading),
@@ -63,17 +52,9 @@ CREATE TABLE water_usage_logs (
 
 );
 
---------------------------------------------------------
--- Duplicate Reading Prevention
---------------------------------------------------------
-
 ALTER TABLE water_usage_logs
 ADD CONSTRAINT uq_household_reading_date
 UNIQUE (household_id, reading_date);
-
---------------------------------------------------------
--- Indexes
---------------------------------------------------------
 
 CREATE INDEX idx_usage_household
 ON water_usage_logs(household_id);

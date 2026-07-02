@@ -1,8 +1,3 @@
--- ============================================
--- AquaTrack
--- V1 - Create Users Table
--- ============================================
-
 CREATE TABLE users (
 
     id BIGSERIAL PRIMARY KEY,
@@ -27,9 +22,6 @@ CREATE TABLE users (
 
 );
 
--- ============================================
--- Indexes
--- ============================================
 
 CREATE INDEX idx_users_email
 ON users(email);
