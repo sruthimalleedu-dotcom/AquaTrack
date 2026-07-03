@@ -97,6 +97,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Spring Security Crypto -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
+
         <!-- CSV Parser -->
         <dependency>
             <groupId>com.opencsv</groupId>

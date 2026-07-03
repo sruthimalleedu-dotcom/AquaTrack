@@ -12,7 +12,7 @@ VALUES
 'System',
 'Administrator',
 'admin@aquatrack.com',
-'$2a$10$......................',
+'$2a$10$KyMCELDH2p0BvacuZiJnyegm71D1ruKFHjbGP9RQgzGy47UXoRpXS',
 'SUPER_ADMIN',
 true
 );
