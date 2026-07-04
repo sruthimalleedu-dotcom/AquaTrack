@@ -1,27 +1,38 @@
 # 💧 AquaTrack
 
 > **A Smart Apartment Water Usage Management System**
->
-> AquaTrack is a Spring Boot based backend application designed to help apartment communities monitor household water consumption, automate billing, manage residents, and detect abnormal usage patterns through a secure and scalable REST API architecture.
+
+AquaTrack is a scalable Spring Boot backend application for apartment communities to manage residents, monitor water consumption, automate billing, and provide secure role-based access using modern backend engineering practices.
 
 ---
 
-## 📌 Project Status
+# 🚀 Project Status
 
-**Current Milestone:** ✅ Milestone 1 – Database Foundation Completed
+**Current Version:** `v1.0 Backend Foundation`
+
+## Completed Modules
 
 | Module | Status |
 |---------|--------|
 | Spring Boot Setup | ✅ Completed |
-| PostgreSQL Configuration | ✅ Completed |
+| PostgreSQL Integration | ✅ Completed |
 | Flyway Migration | ✅ Completed |
 | Database Schema | ✅ Completed |
-| Project Architecture | ✅ Completed |
-| Authentication | ⏳ Upcoming |
-| CRUD APIs | ⏳ Upcoming |
-| CSV Upload | ⏳ Upcoming |
-| Billing Engine | ⏳ Upcoming |
-| Alerts & Notifications | ⏳ Upcoming |
+| JPA Entities | ✅ Completed |
+| Repository Layer | ✅ Completed |
+| DTO Layer | ✅ Completed |
+| Mapper Layer | ✅ Completed |
+| Service Layer | ✅ Completed |
+| Apartment CRUD APIs | ✅ Completed |
+| JWT Authentication | ✅ Completed |
+| Spring Security | ✅ Completed |
+| Role-Based Authorization (RBAC) | ✅ Completed |
+| Login API | ✅ Completed |
+| Forgot Password | ✅ Completed |
+| Reset Password | ✅ Completed |
+| Global Exception Handling | ✅ Completed |
+| Standard API Response | ✅ Completed |
+| Postman Testing | ✅ Completed |
 
 ---
 
@@ -33,12 +44,14 @@
 | Framework | Spring Boot 3.5.3 |
 | Database | PostgreSQL 17 |
 | ORM | Spring Data JPA + Hibernate |
-| Database Migration | Flyway |
-| Security | Spring Security + JWT *(Upcoming)* |
+| Migration | Flyway |
+| Security | Spring Security + JWT |
+| Password Encryption | BCrypt |
+| Validation | Jakarta Validation |
 | Build Tool | Maven |
 | API Testing | Postman |
+| Version Control | Git & GitHub |
 | IDE | IntelliJ IDEA |
-| Version Control | Git + GitHub |
 
 ---
 
@@ -50,56 +63,102 @@ src
 ├── main
 │   ├── java
 │   │   └── com.aquatrack
+│   │
 │   │       ├── config
-│   │       ├── constant
 │   │       ├── controller
-│   │       ├── csv
 │   │       ├── dto
+│   │       │    ├── apartment
+│   │       │    └── auth
 │   │       ├── entity
 │   │       ├── exception
 │   │       ├── mapper
 │   │       ├── repository
 │   │       ├── security
 │   │       ├── service
+│   │       │    └── impl
 │   │       ├── util
-│   │       ├── validation
 │   │       └── AquatrackApplication.java
 │   │
 │   └── resources
 │       ├── application.properties
 │       └── db
-│           └── migration
-│
-└── test
+│            └── migration
 ```
 
 ---
 
-# 🗄️ Database Schema
+# 🏗️ Backend Architecture
 
-Current database consists of **6 primary entities**.
-
-```
-Apartment
-    │
-    ├──────────────┐
-    │              │
-    ▼              ▼
-Household        User
-    │
-    ▼
-WaterUsageLog
-
-Apartment
-    │
-    ├──────────────┐
-    ▼              ▼
-BillingCycle   TariffPlan
+```text
+                Client
+                   │
+                   ▼
+          Spring Security (JWT)
+                   │
+                   ▼
+             REST Controllers
+                   │
+                   ▼
+               Service Layer
+                   │
+                   ▼
+              Mapper Layer
+                   │
+                   ▼
+           Repository (JPA)
+                   │
+                   ▼
+              PostgreSQL
 ```
 
 ---
 
-## 📦 Flyway Migrations
+# 🔐 Authentication
+
+Implemented Features
+
+- JWT Authentication
+- Stateless Security
+- Spring Security Filter Chain
+- Role-Based Access Control (RBAC)
+- BCrypt Password Encryption
+- Forgot Password
+- Password Reset Token
+- Secure Password Reset Flow
+
+Current Roles
+
+- SUPER_ADMIN
+- APARTMENT_ADMIN *(Upcoming)*
+- MANAGER *(Upcoming)*
+- RESIDENT *(Upcoming)*
+
+---
+
+# 🏢 Apartment Module
+
+Completed APIs
+
+| API | Status |
+|------|--------|
+| Create Apartment | ✅ |
+| Get All Apartments | ✅ |
+| Get Apartment By ID | ✅ |
+| Update Apartment | ✅ |
+| Delete Apartment | ✅ |
+
+Implemented Features
+
+- Duplicate Apartment Validation
+- Apartment Mapper
+- DTO Separation
+- Validation
+- Exception Handling
+- RBAC Protection
+
+---
+
+# 📦 Database Migrations
 
 | Version | Description |
 |----------|-------------|
@@ -109,112 +168,103 @@ BillingCycle   TariffPlan
 | V4 | Create Tariff Plans Table |
 | V5 | Create Billing Cycles Table |
 | V6 | Create Water Usage Logs Table |
-| V7 | Add User Relationships & Constraints |
+| V7 | Seed Super Admin |
+| V8 | User Relationships |
+| V9 | Password Reset Tokens |
 
 ---
 
-# ✨ Current Features
+# 📌 API Response Format
 
-### Database
+## Success
 
-- PostgreSQL Integration
-- Flyway Versioned Migrations
-- Normalized Database Design
-- Foreign Key Relationships
-- Unique Constraints
-- Index Optimization
-
----
-
-### Backend Foundation
-
-- Spring Boot Project
-- Maven Build Configuration
-- Layered Architecture
-- Configuration Management
-- Ready for REST API Development
-
----
-
-# 🏗️ Planned Architecture
-
+```json
+{
+  "success": true,
+  "message": "Apartment created successfully.",
+  "data": {},
+  "timestamp": "2026-07-04T05:15:30"
+}
 ```
-Frontend
 
-      │
+---
 
- REST API
+## Error
 
-      │
-
-Spring Boot
-
-├── Security
-├── Controllers
-├── Services
-├── Validation
-├── CSV Import
-├── JPA
-├── Flyway
-
-      │
-
- PostgreSQL
+```json
+{
+  "success": false,
+  "status": 409,
+  "message": "Apartment already exists.",
+  "timestamp": "2026-07-04T05:15:30"
+}
 ```
+
+---
+
+# 🧪 Tested APIs
+
+Authentication
+
+- Login
+- Forgot Password
+- Reset Password
+
+Apartment
+
+- Create
+- Read
+- Update
+- Delete
+- Duplicate Validation
 
 ---
 
 # 📅 Development Roadmap
 
-## ✅ Milestone 1
+## ✅ Sprint 1 (Completed)
 
 - Spring Boot Setup
 - PostgreSQL
 - Flyway
 - Database Schema
-- Migrations
-
----
-
-## 🚧 Milestone 2
-
-- JPA Entities
-- Repository Layer
-- DTOs
-- Mapper
-- Validation
-
----
-
-## 🚧 Milestone 3
-
 - JWT Authentication
 - Spring Security
-- Login
-- Registration
-- Role Based Access
+- RBAC
+- Password Reset
+- Apartment CRUD
+- Global Exception Handling
+- Standard API Response
 
 ---
 
-## 🚧 Milestone 4
+## 🚧 Sprint 2
 
-- Apartment APIs
-- Household APIs
-- Resident Assignment
-- Meter Configuration
+- Apartment Admin Invitation
+- Email Service
+- Account Activation
+- Password Creation Link
+- Apartment Admin Login
 
 ---
 
-## 🚧 Milestone 5
+## 🚧 Sprint 3
 
-- Water Usage Logging
+- Manager Module
+- Resident Module
+- Household Module
+
+---
+
+## 🚧 Sprint 4
+
+- Water Meter
+- Water Usage
 - CSV Upload
-- Duplicate Detection
-- Exception Handling
 
 ---
 
-## 🚧 Milestone 6
+## 🚧 Sprint 5
 
 - Billing Engine
 - Tariff Calculation
@@ -222,16 +272,16 @@ Spring Boot
 
 ---
 
-## 🚧 Milestone 7
+## 🚧 Sprint 6
 
-- Testing
-- Unit Tests
-- Integration Tests
-- API Documentation
+- Dashboard APIs
+- Reports
+- Notifications
+- Swagger Documentation
 
 ---
 
-# 🧪 Build & Run
+# 🛠️ Build & Run
 
 Clone repository
 
@@ -239,13 +289,13 @@ Clone repository
 git clone https://github.com/sruthimalleedu-dotcom/AquaTrack.git
 ```
 
-Navigate to project
+Go to project
 
 ```bash
 cd AquaTrack
 ```
 
-Run application
+Run
 
 ```bash
 ./mvnw spring-boot:run
@@ -253,38 +303,18 @@ Run application
 
 ---
 
-# 🛠️ Database Setup
-
-Create PostgreSQL Database
-
-```sql
-CREATE DATABASE aquatrack;
-```
-
-Update
-
-```
-application.properties
-```
-
-```
-spring.datasource.url=jdbc:postgresql://localhost:5432/aquatrack
-spring.datasource.username=YOUR_USERNAME
-spring.datasource.password=YOUR_PASSWORD
-```
-
-Flyway will automatically execute all migrations on application startup.
-
----
-
 # 📊 Current Progress
 
-```
-Overall Progress
+```text
+Infrastructure          ██████████ 100%
 
-████████░░░░░░░░░░░░░░░░░
+Authentication          ██████████ 100%
 
-≈ 30%
+Apartment Module        ██████████ 100%
+
+Remaining Modules       ███░░░░░░░ 20%
+
+Overall Progress        ██████░░░░ 40%
 ```
 
 ---
@@ -299,25 +329,28 @@ Overall Progress
 
 # 📄 License
 
-This project is developed for academic learning, software engineering practice, and backend architecture implementation.
+This project is developed for learning, software engineering practice, and scalable backend architecture implementation.
 
 ---
 
-# ⭐ Future Enhancements
+# 🌟 Upcoming Features
 
-- JWT Authentication
+- Apartment Admin Invitation
 - Email Notifications
-- Smart Water Alerts
+- Manager Management
+- Resident Management
+- Household Management
+- Water Meter Integration
 - Billing Automation
 - Dashboard Analytics
-- Swagger API Documentation
-- Docker Deployment
+- Swagger/OpenAPI
+- Docker Support
 - CI/CD Pipeline
 - AWS Deployment
 - Redis Caching
 
 ---
 
-## 🌟 AquaTrack
+## ⭐ AquaTrack
 
-**Building a scalable apartment water management platform using Spring Boot, PostgreSQL, Flyway, and modern backend engineering best practices.**
+**Building an enterprise-grade apartment water management platform using Spring Boot, PostgreSQL, Flyway, JWT Security, and modern backend engineering best practices.**
