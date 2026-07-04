@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -13,8 +15,8 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"apartment", "household"})
-@EqualsAndHashCode(exclude = {"apartment", "household"})
+@ToString(exclude = {"ownedApartments", "apartment", "household"})
+@EqualsAndHashCode(exclude = {"ownedApartments", "apartment", "household"})
 public class User {
 
     // ==========================
@@ -64,10 +66,26 @@ public class User {
     // Relationships
     // ==========================
 
+    /**
+     * Apartments owned by this Property Admin.
+     * Applicable only for users having PROPERTY_ADMIN role.
+     */
+    @OneToMany(mappedBy = "propertyAdmin", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Apartment> ownedApartments = new ArrayList<>();
+
+    /**
+     * Apartment assigned to this user.
+     * Used for Managers and Residents.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "apartment_id")
     private Apartment apartment;
 
+    /**
+     * Household assigned to this user.
+     * Used for Residents.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "household_id")
     private Household household;

@@ -3,7 +3,7 @@ package com.aquatrack.enums;
 public enum UserRole {
 
     SUPER_ADMIN,
-    APARTMENT_ADMIN,
+    PROPERTY_ADMIN,
     MANAGER,
     RESIDENT
 

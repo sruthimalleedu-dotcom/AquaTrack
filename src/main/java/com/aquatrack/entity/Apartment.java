@@ -14,8 +14,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"users", "households"})
-@EqualsAndHashCode(exclude = {"users", "households"})
+@ToString(exclude = {"propertyAdmin", "users", "households"})
+@EqualsAndHashCode(exclude = {"propertyAdmin", "users", "households"})
 public class Apartment {
 
     // ==========================
@@ -56,10 +56,24 @@ public class Apartment {
     // Relationships
     // ==========================
 
+    /**
+     * Property Admin who owns/manages this apartment.
+     * One Property Admin can manage multiple apartments.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "property_admin_id")
+    private User propertyAdmin;
+
+    /**
+     * Users (Managers / Residents) belonging to this apartment.
+     */
     @OneToMany(mappedBy = "apartment", fetch = FetchType.LAZY)
     @Builder.Default
     private List<User> users = new ArrayList<>();
 
+    /**
+     * Households belonging to this apartment.
+     */
     @OneToMany(mappedBy = "apartment", fetch = FetchType.LAZY)
     @Builder.Default
     private List<Household> households = new ArrayList<>();

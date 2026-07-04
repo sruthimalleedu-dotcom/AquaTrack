@@ -74,9 +74,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**")
                         .permitAll()
 
+                        .requestMatchers("/api/property-registration/**")
+                        .permitAll()
+
                         // ==========================================
                         // Super Admin APIs
                         // ==========================================
+
+                        .requestMatchers("/api/admin/**")
+                        .hasAuthority("SUPER_ADMIN")
 
                         .requestMatchers("/api/apartments/**")
                         .hasAuthority("SUPER_ADMIN")
