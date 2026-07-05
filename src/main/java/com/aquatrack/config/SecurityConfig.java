@@ -29,9 +29,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-
         return new BCryptPasswordEncoder();
-
     }
 
     // ==========================================
@@ -40,7 +38,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration) throws Exception {
+            AuthenticationConfiguration configuration)
+            throws Exception {
 
         return configuration.getAuthenticationManager();
 
@@ -56,14 +55,21 @@ public class SecurityConfig {
 
         http
 
+                // Disable default security features
                 .csrf(csrf -> csrf.disable())
-
                 .httpBasic(httpBasic -> httpBasic.disable())
-
                 .formLogin(form -> form.disable())
 
+                // Stateless JWT Authentication
                 .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                        session.sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                )
+
+                // ==========================================
+                // Authorization Rules
+                // ==========================================
 
                 .authorizeHttpRequests(auth -> auth
 
@@ -81,23 +87,31 @@ public class SecurityConfig {
                         .permitAll()
 
                         // ==========================================
-                        // Super Admin APIs
+                        // SUPER_ADMIN APIs
                         // ==========================================
 
                         .requestMatchers("/api/admin/**")
                         .hasAuthority("SUPER_ADMIN")
 
+                        // ==========================================
+                        // PROPERTY_ADMIN APIs
+                        // ==========================================
+
                         .requestMatchers("/api/apartments/**")
                         .hasAuthority("PROPERTY_ADMIN")
 
                         // ==========================================
-                        // Authenticated APIs
+                        // All Other APIs
                         // ==========================================
 
                         .anyRequest()
                         .authenticated()
 
                 )
+
+                // ==========================================
+                // JWT Filter
+                // ==========================================
 
                 .addFilterBefore(
                         jwtAuthenticationFilter,

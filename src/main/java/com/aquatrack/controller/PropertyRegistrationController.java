@@ -5,6 +5,7 @@ import com.aquatrack.dto.propertyregistration.PropertyRegistrationCreateRequest;
 import com.aquatrack.dto.propertyregistration.PropertyRegistrationResponse;
 import com.aquatrack.dto.propertyregistration.PropertyRegistrationSummaryResponse;
 import com.aquatrack.dto.propertyregistration.ApprovePropertyRegistrationResponse;
+import com.aquatrack.dto.propertyregistration.RejectPropertyRegistrationRequest;
 import com.aquatrack.service.PropertyRegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -114,6 +115,28 @@ public class PropertyRegistrationController {
                 ApiResponse.success(
                         "Property registration approved successfully.",
                         response
+                )
+        );
+
+    }
+
+    // ==========================================
+    // Reject Registration Request
+    // ==========================================
+
+    @PutMapping("/api/admin/property-registration/{requestId}/reject")
+    public ResponseEntity<ApiResponse<Void>> rejectRegistrationRequest(
+            @PathVariable Long requestId,
+            @Valid @RequestBody RejectPropertyRegistrationRequest request) {
+
+        propertyRegistrationService.rejectRegistrationRequest(
+                requestId,
+                request
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Property registration request rejected successfully."
                 )
         );
 

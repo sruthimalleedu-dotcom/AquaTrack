@@ -1,9 +1,9 @@
 package com.aquatrack.service;
 
+import com.aquatrack.dto.propertyregistration.ApprovePropertyRegistrationResponse;
 import com.aquatrack.dto.propertyregistration.PropertyRegistrationCreateRequest;
 import com.aquatrack.dto.propertyregistration.PropertyRegistrationResponse;
 import com.aquatrack.dto.propertyregistration.PropertyRegistrationSummaryResponse;
-import com.aquatrack.dto.propertyregistration.ApprovePropertyRegistrationResponse;
 import com.aquatrack.dto.propertyregistration.RejectPropertyRegistrationRequest;
 
 import java.util.List;
@@ -19,22 +19,24 @@ public interface PropertyRegistrationService {
     );
 
     // ==========================================
-    // Super Admin APIs
+    // SUPER_ADMIN APIs
     // ==========================================
 
     List<PropertyRegistrationSummaryResponse> getAllRegistrationRequests();
 
-    PropertyRegistrationResponse getRegistrationRequestById(Long requestId);
+    PropertyRegistrationResponse getRegistrationRequestById(
+            Long requestId
+    );
 
     // ==========================================
-    // Super Admin Actions
+    // SUPER_ADMIN Actions
     // ==========================================
 
     ApprovePropertyRegistrationResponse approveRegistrationRequest(
             Long requestId
     );
 
-    PropertyRegistrationResponse rejectRegistrationRequest(
+    void rejectRegistrationRequest(
             Long requestId,
             RejectPropertyRegistrationRequest request
     );

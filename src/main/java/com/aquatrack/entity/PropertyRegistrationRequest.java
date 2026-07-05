@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
-@EqualsAndHashCode
+@ToString(exclude = "reviewedBy")
+@EqualsAndHashCode(exclude = "reviewedBy")
 public class PropertyRegistrationRequest {
 
     // ==========================
@@ -73,6 +73,20 @@ public class PropertyRegistrationRequest {
     @Column(name = "status", nullable = false, length = 20)
     @Builder.Default
     private RegistrationStatus status = RegistrationStatus.PENDING;
+
+    // ==========================
+    // Review Information
+    // ==========================
+
+    @Column(name = "rejection_reason", length = 500)
+    private String rejectionReason;
+
+    @Column(name = "reviewed_at")
+    private LocalDateTime reviewedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reviewed_by")
+    private User reviewedBy;
 
     // ==========================
     // Admin Remarks

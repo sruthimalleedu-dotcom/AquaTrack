@@ -1,6 +1,7 @@
 package com.aquatrack.dto.propertyregistration;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,7 +9,8 @@ import lombok.Setter;
 @Setter
 public class RejectPropertyRegistrationRequest {
 
-    @NotBlank(message = "Remarks are required.")
-    private String remarks;
+    @NotBlank(message = "Rejection reason is required.")
+    @Size(max = 500, message = "Rejection reason cannot exceed 500 characters.")
+    private String rejectionReason;
 
 }

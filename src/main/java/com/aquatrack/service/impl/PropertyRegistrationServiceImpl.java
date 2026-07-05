@@ -16,6 +16,7 @@ import com.aquatrack.repository.PropertyAdminInvitationRepository;
 import com.aquatrack.repository.PropertyRegistrationRequestRepository;
 import com.aquatrack.repository.UserRepository;
 import com.aquatrack.service.PropertyRegistrationService;
+import com.aquatrack.service.CurrentUserService;
 import com.aquatrack.entity.PropertyAdminInvitation;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -43,6 +44,8 @@ public class PropertyRegistrationServiceImpl
     private final PropertyAdminInvitationRepository invitationRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final CurrentUserService currentUserService;
 
     // ==========================================
     // Submit Registration Request
@@ -234,12 +237,37 @@ public class PropertyRegistrationServiceImpl
         invitationRepository.save(invitation);
 
         // ==========================================
-        // Update Registration Status
+        // Get Logged-in SUPER_ADMIN
         // ==========================================
 
-        registrationRequest.setStatus(RegistrationStatus.APPROVED);
+        User superAdmin =
+                currentUserService.getCurrentUser();
 
-        repository.save(registrationRequest);
+        // ==========================================
+        // Update Registration Request
+        // ==========================================
+
+        registrationRequest.setStatus(
+                RegistrationStatus.APPROVED
+        );
+
+        registrationRequest.setRejectionReason(null);
+
+        registrationRequest.setReviewedAt(
+                LocalDateTime.now()
+        );
+
+        registrationRequest.setReviewedBy(
+                superAdmin
+        );
+
+        // ==========================================
+        // Save Changes
+        // ==========================================
+
+        repository.save(
+                registrationRequest
+        );
 
         // ==========================================
         // Build Activation Link
@@ -262,13 +290,66 @@ public class PropertyRegistrationServiceImpl
     // ==========================================
 
     @Override
-    public PropertyRegistrationResponse rejectRegistrationRequest(
+    public void rejectRegistrationRequest(
             Long requestId,
             RejectPropertyRegistrationRequest request) {
 
-        throw new UnsupportedOperationException(
-                "Reject registration request is not implemented yet."
+        // ==========================================
+        // Find Registration Request
+        // ==========================================
+
+        PropertyRegistrationRequest registrationRequest =
+                repository.findById(requestId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Property registration request not found with id: "
+                                                + requestId
+                                ));
+
+        // ==========================================
+        // Validate Registration Status
+        // ==========================================
+
+        if (registrationRequest.getStatus() != RegistrationStatus.PENDING) {
+
+            throw new IllegalStateException(
+                    "Only pending registration requests can be rejected."
+            );
+
+        }
+
+        // ==========================================
+        // Get Logged-in SUPER_ADMIN
+        // ==========================================
+
+        User superAdmin =
+                currentUserService.getCurrentUser();
+
+        // ==========================================
+        // Update Registration Request
+        // ==========================================
+
+        registrationRequest.setStatus(
+                RegistrationStatus.REJECTED
         );
+
+        registrationRequest.setRejectionReason(
+                request.getRejectionReason()
+        );
+
+        registrationRequest.setReviewedAt(
+                LocalDateTime.now()
+        );
+
+        registrationRequest.setReviewedBy(
+                superAdmin
+        );
+
+        // ==========================================
+        // Save Changes
+        // ==========================================
+
+        repository.save(registrationRequest);
 
     }
 
