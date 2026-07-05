@@ -1,15 +1,26 @@
 package com.aquatrack.service.impl;
 
+import com.aquatrack.dto.propertyregistration.ApprovePropertyRegistrationResponse;
 import com.aquatrack.dto.propertyregistration.PropertyRegistrationCreateRequest;
 import com.aquatrack.dto.propertyregistration.PropertyRegistrationResponse;
 import com.aquatrack.dto.propertyregistration.PropertyRegistrationSummaryResponse;
+import com.aquatrack.dto.propertyregistration.RejectPropertyRegistrationRequest;
 import com.aquatrack.entity.PropertyRegistrationRequest;
+import com.aquatrack.entity.User;
+import com.aquatrack.enums.UserRole;
+import com.aquatrack.enums.RegistrationStatus;
 import com.aquatrack.exception.DuplicateResourceException;
 import com.aquatrack.exception.ResourceNotFoundException;
 import com.aquatrack.mapper.PropertyRegistrationMapper;
+import com.aquatrack.repository.PropertyAdminInvitationRepository;
 import com.aquatrack.repository.PropertyRegistrationRequestRepository;
+import com.aquatrack.repository.UserRepository;
 import com.aquatrack.service.PropertyRegistrationService;
+import com.aquatrack.entity.PropertyAdminInvitation;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,6 +37,12 @@ public class PropertyRegistrationServiceImpl
     private final PropertyRegistrationRequestRepository repository;
 
     private final PropertyRegistrationMapper mapper;
+
+    private final UserRepository userRepository;
+
+    private final PropertyAdminInvitationRepository invitationRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
     // ==========================================
     // Submit Registration Request
@@ -91,22 +108,187 @@ public class PropertyRegistrationServiceImpl
     public PropertyRegistrationResponse getRegistrationRequestById(
             Long requestId) {
 
+        PropertyRegistrationRequest entity =
+                repository.findById(requestId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Property registration request not found with id: "
+                                                + requestId
+                                ));
+
+        return mapper.toResponse(entity);
+
+    }
+
+    // ==========================================
+    // Approve Registration Request
+    // ==========================================
+
+    @Override
+    public ApprovePropertyRegistrationResponse approveRegistrationRequest(
+            Long requestId) {
+
         // ==========================================
         // Find Registration Request
         // ==========================================
 
-        PropertyRegistrationRequest entity = repository.findById(requestId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Property registration request not found with id: "
-                                        + requestId
-                        ));
+        PropertyRegistrationRequest registrationRequest =
+                repository.findById(requestId)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Property registration request not found with id: "
+                                                + requestId
+                                ));
 
         // ==========================================
-        // Entity -> Response
+        // Validate Registration Status
         // ==========================================
 
-        return mapper.toResponse(entity);
+        if (registrationRequest.getStatus() != RegistrationStatus.PENDING) {
+
+            throw new IllegalStateException(
+                    "Only pending registration requests can be approved."
+            );
+
+        }
+
+        // ==========================================
+        // Check Existing Property Admin
+        // ==========================================
+
+        if (userRepository.existsByEmailIgnoreCase(
+                registrationRequest.getEmail())) {
+
+            throw new DuplicateResourceException(
+                    "A Property Admin already exists with this email."
+            );
+
+        }
+        // ==========================================
+        // Split Contact Person Name
+        // ==========================================
+
+        String[] nameParts = splitName(
+                registrationRequest.getContactPersonName()
+        );
+
+        // ==========================================
+        // Create Property Admin User
+        // ==========================================
+
+        User propertyAdmin = User.builder()
+                .firstName(nameParts[0])
+                .lastName(nameParts[1])
+                .email(registrationRequest.getEmail())
+                .phone(registrationRequest.getPhone())
+
+                .password(
+                        passwordEncoder.encode(
+                                java.util.UUID.randomUUID().toString()
+                        )
+                )
+
+                .role(UserRole.PROPERTY_ADMIN)
+
+                .isActive(false)
+
+                .build();
+
+
+        // ==========================================
+        // Save Property Admin
+        // ==========================================
+
+        propertyAdmin = userRepository.save(propertyAdmin);
+
+        // ==========================================
+        // Generate Invitation Token
+        // ==========================================
+
+        String token = UUID.randomUUID().toString();
+
+        // Safety Check (extremely rare, but good practice)
+
+        while (invitationRepository.existsByToken(token)) {
+            token = UUID.randomUUID().toString();
+        }
+
+        // ==========================================
+        // Create Invitation
+        // ==========================================
+
+        PropertyAdminInvitation invitation =
+                PropertyAdminInvitation.builder()
+                        .user(propertyAdmin)
+                        .token(token)
+                        .expiresAt(
+                                LocalDateTime.now().plusDays(7)
+                        )
+                        .isUsed(false)
+                        .build();
+
+        // ==========================================
+        // Save Invitation
+        // ==========================================
+
+        invitationRepository.save(invitation);
+
+        // ==========================================
+        // Update Registration Status
+        // ==========================================
+
+        registrationRequest.setStatus(RegistrationStatus.APPROVED);
+
+        repository.save(registrationRequest);
+
+        // ==========================================
+        // Build Activation Link
+        // ==========================================
+
+        String activationLink =
+                "http://localhost:8080/api/property-admin/activate?token=" + token;
+
+
+        return ApprovePropertyRegistrationResponse.builder()
+                .propertyAdminId(propertyAdmin.getId())
+                .propertyAdminEmail(propertyAdmin.getEmail())
+                .invitationToken(token)
+                .activationLink(activationLink)
+                .build();
+    }
+
+    // ==========================================
+    // Reject Registration Request
+    // ==========================================
+
+    @Override
+    public PropertyRegistrationResponse rejectRegistrationRequest(
+            Long requestId,
+            RejectPropertyRegistrationRequest request) {
+
+        throw new UnsupportedOperationException(
+                "Reject registration request is not implemented yet."
+        );
+
+    }
+
+    // ==========================================
+    // Helper Methods
+    // ==========================================
+
+    private String[] splitName(String fullName) {
+
+        if (fullName == null || fullName.isBlank()) {
+            return new String[]{"", ""};
+        }
+
+        String[] parts = fullName.trim().split("\\s+", 2);
+
+        if (parts.length == 1) {
+            return new String[]{parts[0], ""};
+        }
+
+        return parts;
 
     }
 

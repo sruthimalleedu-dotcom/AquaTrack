@@ -4,6 +4,7 @@ import com.aquatrack.dto.ApiResponse;
 import com.aquatrack.dto.propertyregistration.PropertyRegistrationCreateRequest;
 import com.aquatrack.dto.propertyregistration.PropertyRegistrationResponse;
 import com.aquatrack.dto.propertyregistration.PropertyRegistrationSummaryResponse;
+import com.aquatrack.dto.propertyregistration.ApprovePropertyRegistrationResponse;
 import com.aquatrack.service.PropertyRegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -90,6 +91,28 @@ public class PropertyRegistrationController {
         return ResponseEntity.ok(
                 ApiResponse.success(
                         "Property registration request fetched successfully.",
+                        response
+                )
+        );
+
+    }
+
+    // ==========================================
+    // Approve Registration Request
+    // ==========================================
+
+    @PutMapping("/api/admin/property-registration/{requestId}/approve")
+    public ResponseEntity<ApiResponse<ApprovePropertyRegistrationResponse>>
+    approveRegistrationRequest(
+            @PathVariable Long requestId) {
+
+        ApprovePropertyRegistrationResponse response =
+                propertyRegistrationService
+                        .approveRegistrationRequest(requestId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Property registration approved successfully.",
                         response
                 )
         );
