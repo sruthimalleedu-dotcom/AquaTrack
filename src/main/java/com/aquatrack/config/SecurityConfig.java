@@ -88,7 +88,7 @@ public class SecurityConfig {
                         .hasAuthority("SUPER_ADMIN")
 
                         .requestMatchers("/api/apartments/**")
-                        .hasAuthority("SUPER_ADMIN")
+                        .hasAuthority("PROPERTY_ADMIN")
 
                         // ==========================================
                         // Authenticated APIs

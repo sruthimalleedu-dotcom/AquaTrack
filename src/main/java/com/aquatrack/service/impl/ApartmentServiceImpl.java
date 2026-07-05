@@ -7,6 +7,8 @@ import com.aquatrack.exception.ResourceNotFoundException;
 import com.aquatrack.mapper.ApartmentMapper;
 import com.aquatrack.repository.ApartmentRepository;
 import com.aquatrack.service.ApartmentService;
+import com.aquatrack.entity.User;
+import com.aquatrack.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,19 +26,28 @@ public class ApartmentServiceImpl implements ApartmentService {
 
     private final ApartmentMapper apartmentMapper;
 
+    private final CurrentUserService currentUserService;
 
     @Override
     public ApartmentResponse createApartment(
             ApartmentCreateRequest request) {
 
         // ==========================================
+        // Get Logged-in Property Admin
+        // ==========================================
+
+        User propertyAdmin =
+                currentUserService.getCurrentUser();
+
+        // ==========================================
         // Check Duplicate Apartment
         // ==========================================
 
         if (apartmentRepository
-                .existsByApartmentNameIgnoreCaseAndPincode(
+                .existsByApartmentNameIgnoreCaseAndPincodeAndPropertyAdmin(
                         request.getApartmentName(),
-                        request.getPincode()
+                        request.getPincode(),
+                        propertyAdmin
                 )) {
 
             throw new DuplicateResourceException(
@@ -49,13 +60,21 @@ public class ApartmentServiceImpl implements ApartmentService {
         // Convert DTO -> Entity
         // ==========================================
 
-        Apartment apartment = apartmentMapper.toEntity(request);
+        Apartment apartment =
+                apartmentMapper.toEntity(request);
+
+        // ==========================================
+        // Assign Property Admin
+        // ==========================================
+
+        apartment.setPropertyAdmin(propertyAdmin);
 
         // ==========================================
         // Save Apartment
         // ==========================================
 
-        Apartment savedApartment = apartmentRepository.save(apartment);
+        Apartment savedApartment =
+                apartmentRepository.save(apartment);
 
         // ==========================================
         // Convert Entity -> Response
@@ -72,12 +91,26 @@ public class ApartmentServiceImpl implements ApartmentService {
         // Find Apartment
         // ==========================================
 
-        Apartment apartment = apartmentRepository.findById(apartmentId)
+        // ==========================================
+        // Get Logged-in Property Admin
+        // ==========================================
+
+        User propertyAdmin =
+                currentUserService.getCurrentUser();
+
+        // ==========================================
+        // Find Apartment
+        // ==========================================
+
+        Apartment apartment = apartmentRepository
+                .findByIdAndPropertyAdmin(
+                        apartmentId,
+                        propertyAdmin
+                )
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Apartment not found with id: " + apartmentId
                         ));
-
         // ==========================================
         // Convert Entity -> Response
         // ==========================================
@@ -90,10 +123,18 @@ public class ApartmentServiceImpl implements ApartmentService {
     public List<ApartmentSummaryResponse> getAllApartments() {
 
         // ==========================================
-        // Fetch All Apartments
+        // Get Logged-in Property Admin
         // ==========================================
 
-        return apartmentRepository.findAll()
+        User propertyAdmin =
+                currentUserService.getCurrentUser();
+
+        // ==========================================
+        // Fetch Only Current Property Admin Apartments
+        // ==========================================
+
+        return apartmentRepository
+                .findAllByPropertyAdmin(propertyAdmin)
                 .stream()
                 .map(apartmentMapper::toSummaryResponse)
                 .toList();
@@ -106,10 +147,21 @@ public class ApartmentServiceImpl implements ApartmentService {
             ApartmentUpdateRequest request) {
 
         // ==========================================
+        // Get Logged-in Property Admin
+        // ==========================================
+
+        User propertyAdmin =
+                currentUserService.getCurrentUser();
+
+        // ==========================================
         // Find Apartment
         // ==========================================
 
-        Apartment apartment = apartmentRepository.findById(apartmentId)
+        Apartment apartment = apartmentRepository
+                .findByIdAndPropertyAdmin(
+                        apartmentId,
+                        propertyAdmin
+                )
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Apartment not found with id: " + apartmentId
@@ -120,9 +172,10 @@ public class ApartmentServiceImpl implements ApartmentService {
         // ==========================================
 
         if (apartmentRepository
-                .existsByApartmentNameIgnoreCaseAndPincodeAndIdNot(
+                .existsByApartmentNameIgnoreCaseAndPincodeAndPropertyAdminAndIdNot(
                         request.getApartmentName(),
                         request.getPincode(),
+                        propertyAdmin,
                         apartmentId
                 )) {
 
@@ -136,13 +189,17 @@ public class ApartmentServiceImpl implements ApartmentService {
         // Update Entity
         // ==========================================
 
-        apartmentMapper.updateEntity(apartment, request);
+        apartmentMapper.updateEntity(
+                apartment,
+                request
+        );
 
         // ==========================================
         // Save Updated Apartment
         // ==========================================
 
-        Apartment updatedApartment = apartmentRepository.save(apartment);
+        Apartment updatedApartment =
+                apartmentRepository.save(apartment);
 
         // ==========================================
         // Convert Entity -> Response
@@ -153,13 +210,25 @@ public class ApartmentServiceImpl implements ApartmentService {
     }
 
     @Override
-    public void deleteApartment(Long apartmentId) {
+    public void deleteApartment(
+            Long apartmentId) {
+
+        // ==========================================
+        // Get Logged-in Property Admin
+        // ==========================================
+
+        User propertyAdmin =
+                currentUserService.getCurrentUser();
 
         // ==========================================
         // Find Apartment
         // ==========================================
 
-        Apartment apartment = apartmentRepository.findById(apartmentId)
+        Apartment apartment = apartmentRepository
+                .findByIdAndPropertyAdmin(
+                        apartmentId,
+                        propertyAdmin
+                )
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "Apartment not found with id: " + apartmentId
