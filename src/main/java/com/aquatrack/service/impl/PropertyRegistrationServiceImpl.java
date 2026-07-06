@@ -17,6 +17,7 @@ import com.aquatrack.repository.PropertyRegistrationRequestRepository;
 import com.aquatrack.repository.UserRepository;
 import com.aquatrack.service.PropertyRegistrationService;
 import com.aquatrack.service.CurrentUserService;
+import com.aquatrack.notification.service.NotificationService;
 import com.aquatrack.entity.PropertyAdminInvitation;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -46,6 +47,8 @@ public class PropertyRegistrationServiceImpl
     private final PasswordEncoder passwordEncoder;
 
     private final CurrentUserService currentUserService;
+
+    private final NotificationService notificationService;
 
     // ==========================================
     // Submit Registration Request
@@ -167,6 +170,7 @@ public class PropertyRegistrationServiceImpl
             );
 
         }
+
         // ==========================================
         // Split Contact Person Name
         // ==========================================
@@ -184,19 +188,14 @@ public class PropertyRegistrationServiceImpl
                 .lastName(nameParts[1])
                 .email(registrationRequest.getEmail())
                 .phone(registrationRequest.getPhone())
-
                 .password(
                         passwordEncoder.encode(
-                                java.util.UUID.randomUUID().toString()
+                                UUID.randomUUID().toString()
                         )
                 )
-
                 .role(UserRole.PROPERTY_ADMIN)
-
                 .isActive(false)
-
                 .build();
-
 
         // ==========================================
         // Save Property Admin
@@ -210,14 +209,12 @@ public class PropertyRegistrationServiceImpl
 
         String token = UUID.randomUUID().toString();
 
-        // Safety Check (extremely rare, but good practice)
-
         while (invitationRepository.existsByToken(token)) {
             token = UUID.randomUUID().toString();
         }
 
         // ==========================================
-        // Create Invitation
+        // Create Property Admin Invitation
         // ==========================================
 
         PropertyAdminInvitation invitation =
@@ -262,20 +259,31 @@ public class PropertyRegistrationServiceImpl
         );
 
         // ==========================================
-        // Save Changes
+        // Save Registration Request
         // ==========================================
 
-        repository.save(
-                registrationRequest
-        );
+        repository.save(registrationRequest);
 
         // ==========================================
         // Build Activation Link
         // ==========================================
 
         String activationLink =
-                "http://localhost:8080/api/property-admin/activate?token=" + token;
+                "http://localhost:8080/api/property-admin/activate?token="
+                        + token;
 
+        // ==========================================
+        // Send Registration Approval Email
+        // ==========================================
+
+        notificationService.sendRegistrationApprovedEmail(
+                registrationRequest,
+                activationLink
+        );
+
+        // ==========================================
+        // Build Response
+        // ==========================================
 
         return ApprovePropertyRegistrationResponse.builder()
                 .propertyAdminId(propertyAdmin.getId())
@@ -283,11 +291,12 @@ public class PropertyRegistrationServiceImpl
                 .invitationToken(token)
                 .activationLink(activationLink)
                 .build();
+
     }
 
     // ==========================================
-    // Reject Registration Request
-    // ==========================================
+// Reject Registration Request
+// ==========================================
 
     @Override
     public void rejectRegistrationRequest(
@@ -346,10 +355,18 @@ public class PropertyRegistrationServiceImpl
         );
 
         // ==========================================
-        // Save Changes
+        // Save Registration Request
         // ==========================================
 
         repository.save(registrationRequest);
+
+        // ==========================================
+        // Send Registration Rejection Email
+        // ==========================================
+
+        notificationService.sendRegistrationRejectedEmail(
+                registrationRequest
+        );
 
     }
 

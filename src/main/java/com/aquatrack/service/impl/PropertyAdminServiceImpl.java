@@ -8,6 +8,7 @@ import com.aquatrack.entity.User;
 import com.aquatrack.repository.PropertyAdminInvitationRepository;
 import com.aquatrack.repository.UserRepository;
 import com.aquatrack.exception.ResourceNotFoundException;
+import com.aquatrack.notification.service.NotificationService;
 import java.time.LocalDateTime;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,12 @@ public class PropertyAdminServiceImpl
 
     private final PasswordEncoder passwordEncoder;
 
+    private final NotificationService notificationService;
+
+    // ==========================================
+    // Validate Property Admin Activation Token
+    // ==========================================
+
     @Override
     public PropertyAdminActivationResponse validateActivationToken(
             String token) {
@@ -45,7 +52,7 @@ public class PropertyAdminServiceImpl
                                 ));
 
         // ==========================================
-        // Check Token Already Used
+        // Check Whether Token Is Already Used
         // ==========================================
 
         if (Boolean.TRUE.equals(invitation.getIsUsed())) {
@@ -57,13 +64,13 @@ public class PropertyAdminServiceImpl
         }
 
         // ==========================================
-        // Check Token Expiry
+        // Check Token Expiration
         // ==========================================
 
         if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
 
             throw new IllegalStateException(
-                    "Activation link has expired."
+                    "This activation link has expired."
             );
 
         }
@@ -75,18 +82,38 @@ public class PropertyAdminServiceImpl
         User propertyAdmin = invitation.getUser();
 
         // ==========================================
-        // Build Response
+        // Build Activation Response
         // ==========================================
 
         return PropertyAdminActivationResponse.builder()
-                .firstName(propertyAdmin.getFirstName())
-                .lastName(propertyAdmin.getLastName())
-                .email(propertyAdmin.getEmail())
-                .token(token)
-                .tokenValid(true)
+
+                .firstName(
+                        propertyAdmin.getFirstName()
+                )
+
+                .lastName(
+                        propertyAdmin.getLastName()
+                )
+
+                .email(
+                        propertyAdmin.getEmail()
+                )
+
+                .token(
+                        token
+                )
+
+                .tokenValid(
+                        true
+                )
+
                 .build();
 
     }
+
+    // ==========================================
+    // Set Password & Activate Property Admin
+    // ==========================================
 
     @Override
     public void setPassword(
@@ -104,7 +131,7 @@ public class PropertyAdminServiceImpl
                                 ));
 
         // ==========================================
-        // Validate Invitation
+        // Check Whether Token Is Already Used
         // ==========================================
 
         if (Boolean.TRUE.equals(invitation.getIsUsed())) {
@@ -115,10 +142,26 @@ public class PropertyAdminServiceImpl
 
         }
 
+        // ==========================================
+        // Check Token Expiration
+        // ==========================================
+
         if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
 
             throw new IllegalStateException(
-                    "Activation link has expired."
+                    "This activation link has expired."
+            );
+
+        }
+
+        // ==========================================
+        // Validate Password Confirmation
+        // ==========================================
+
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+
+            throw new IllegalArgumentException(
+                    "Password and Confirm Password do not match."
             );
 
         }
@@ -130,14 +173,24 @@ public class PropertyAdminServiceImpl
         User propertyAdmin = invitation.getUser();
 
         // ==========================================
-        // Update Password
+        // Update User Password
         // ==========================================
 
         propertyAdmin.setPassword(
-                passwordEncoder.encode(request.getPassword())
+                passwordEncoder.encode(
+                        request.getPassword()
+                )
         );
 
+        // ==========================================
+        // Activate Property Admin Account
+        // ==========================================
+
         propertyAdmin.setIsActive(true);
+
+        // ==========================================
+        // Save Updated User
+        // ==========================================
 
         userRepository.save(propertyAdmin);
 
@@ -149,6 +202,13 @@ public class PropertyAdminServiceImpl
 
         invitationRepository.save(invitation);
 
+        // ==========================================
+        // Send Welcome Email
+        // ==========================================
+
+        notificationService.sendWelcomeEmail(
+                propertyAdmin
+        );
     }
 
 

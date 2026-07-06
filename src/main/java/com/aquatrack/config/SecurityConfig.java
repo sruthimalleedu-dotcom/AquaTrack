@@ -73,6 +73,10 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+
+//                                        .anyRequest().permitAll()
+
+
                         // ==========================================
                         // Public APIs
                         // ==========================================
@@ -84,6 +88,9 @@ public class SecurityConfig {
                         .permitAll()
 
                         .requestMatchers("/api/property-admin/**")
+                        .permitAll()
+
+                        .requestMatchers("/api/test/**")
                         .permitAll()
 
                         // ==========================================
