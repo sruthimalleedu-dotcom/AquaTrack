@@ -5,6 +5,10 @@ import com.aquatrack.entity.User;
 import com.aquatrack.notification.model.EmailDetails;
 import com.aquatrack.notification.service.EmailService;
 import com.aquatrack.notification.service.NotificationService;
+import com.aquatrack.notification.template.PropertyAdminReactivatedTemplate;
+import com.aquatrack.notification.template.ForgotPasswordTemplate;
+import com.aquatrack.notification.template.PasswordResetSuccessTemplate;
+import com.aquatrack.notification.template.PropertyAdminSuspendedTemplate;
 import com.aquatrack.notification.template.RegistrationApprovedTemplate;
 import com.aquatrack.notification.template.RegistrationRejectedTemplate;
 import com.aquatrack.notification.template.WelcomePropertyAdminTemplate;
@@ -77,9 +81,11 @@ public class NotificationServiceImpl
     // ==========================================
 
     @Override
-    public void sendPropertyAdminActivationEmail(User user) {
+    public void sendPropertyAdminActivationEmail(
+            User user
+    ) {
 
-        // Will be implemented in Milestone 6
+        // Will be implemented in future milestone
 
     }
 
@@ -93,7 +99,32 @@ public class NotificationServiceImpl
             String resetLink
     ) {
 
-        // Will be implemented in Milestone 6
+        // ==========================================
+        // Build HTML Email
+        // ==========================================
+
+        String html =
+                ForgotPasswordTemplate.build(
+                        user.getFirstName(),
+                        resetLink
+                );
+
+        // ==========================================
+        // Prepare Email
+        // ==========================================
+
+        EmailDetails email = new EmailDetails(
+                user.getEmail(),
+                "AquaTrack - Reset Your Password",
+                html,
+                true
+        );
+
+        // ==========================================
+        // Send Email
+        // ==========================================
+
+        emailService.sendEmail(email);
 
     }
 
@@ -102,26 +133,16 @@ public class NotificationServiceImpl
     // ==========================================
 
     @Override
-    public void sendPasswordResetSuccessEmail(User user) {
-
-        // Will be implemented in Milestone 7
-
-    }
-
-    // ==========================================
-// Send Welcome Email
-// ==========================================
-
-    @Override
-    public void sendWelcomeEmail(
-            User user) {
+    public void sendPasswordResetSuccessEmail(
+            User user
+    ) {
 
         // ==========================================
         // Build HTML Email
         // ==========================================
 
         String html =
-                WelcomePropertyAdminTemplate.build(
+                PasswordResetSuccessTemplate.build(
                         user.getFirstName()
                 );
 
@@ -131,7 +152,7 @@ public class NotificationServiceImpl
 
         EmailDetails email = new EmailDetails(
                 user.getEmail(),
-                "Welcome to AquaTrack",
+                "AquaTrack - Password Reset Successful",
                 html,
                 true
         );
@@ -139,6 +160,81 @@ public class NotificationServiceImpl
         // ==========================================
         // Send Email
         // ==========================================
+
+        emailService.sendEmail(email);
+
+    }
+
+    // ==========================================
+    // Welcome Email
+    // ==========================================
+
+    @Override
+    public void sendWelcomeEmail(
+            User user
+    ) {
+
+        String html =
+                WelcomePropertyAdminTemplate.build(
+                        user.getFirstName()
+                );
+
+        EmailDetails email = new EmailDetails(
+                user.getEmail(),
+                "Welcome to AquaTrack",
+                html,
+                true
+        );
+
+        emailService.sendEmail(email);
+
+    }
+
+    // ==========================================
+    // Property Admin Suspended Email
+    // ==========================================
+
+    @Override
+    public void sendPropertyAdminSuspendedEmail(
+            User user
+    ) {
+
+        String html =
+                PropertyAdminSuspendedTemplate.build(
+                        user.getFirstName()
+                );
+
+        EmailDetails email = new EmailDetails(
+                user.getEmail(),
+                "AquaTrack - Account Suspended",
+                html,
+                true
+        );
+
+        emailService.sendEmail(email);
+
+    }
+
+    // ==========================================
+    // Property Admin Reactivated Email
+    // ==========================================
+
+    @Override
+    public void sendPropertyAdminReactivatedEmail(
+            User user
+    ) {
+
+        String html =
+                PropertyAdminReactivatedTemplate.build(
+                        user.getFirstName()
+                );
+
+        EmailDetails email = new EmailDetails(
+                user.getEmail(),
+                "AquaTrack - Account Reactivated",
+                html,
+                true
+        );
 
         emailService.sendEmail(email);
 

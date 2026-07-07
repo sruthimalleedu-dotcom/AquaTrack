@@ -14,8 +14,14 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = "reviewedBy")
-@EqualsAndHashCode(exclude = "reviewedBy")
+@ToString(exclude = {
+        "reviewedBy",
+        "propertyAdmin"
+})
+@EqualsAndHashCode(exclude = {
+        "reviewedBy",
+        "propertyAdmin"
+})
 public class PropertyRegistrationRequest {
 
     // ==========================
@@ -89,6 +95,14 @@ public class PropertyRegistrationRequest {
     private User reviewedBy;
 
     // ==========================
+    // Linked Property Admin
+    // ==========================
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "property_admin_id")
+    private User propertyAdmin;
+
+    // ==========================
     // Admin Remarks
     // ==========================
 
@@ -124,4 +138,5 @@ public class PropertyRegistrationRequest {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
 }

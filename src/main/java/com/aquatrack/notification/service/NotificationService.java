@@ -47,4 +47,20 @@ public interface NotificationService {
             User user
     );
 
+    // ==========================================
+    // Property Admin Suspended Email
+    // ==========================================
+
+    void sendPropertyAdminSuspendedEmail(
+            User user
+    );
+
+    // ==========================================
+// Property Admin Reactivated Email
+// ==========================================
+
+    void sendPropertyAdminReactivatedEmail(
+            User user
+    );
+
 }

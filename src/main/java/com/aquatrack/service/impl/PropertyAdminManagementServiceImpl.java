@@ -8,6 +8,7 @@ import com.aquatrack.repository.UserRepository;
 import com.aquatrack.entity.User;
 import com.aquatrack.exception.ResourceNotFoundException;
 import com.aquatrack.service.PropertyAdminManagementService;
+import com.aquatrack.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,8 @@ public class PropertyAdminManagementServiceImpl
     private final UserRepository userRepository;
 
     private final PropertyAdminMapper propertyAdminMapper;
+
+    private final NotificationService notificationService;
 
     // ==========================================
     // Get All Property Admins
@@ -80,7 +83,8 @@ public class PropertyAdminManagementServiceImpl
 
     @Override
     public void suspendPropertyAdmin(
-            Long propertyAdminId) {
+            Long propertyAdminId
+    ) {
 
         // ==========================================
         // Find Property Admin
@@ -115,7 +119,19 @@ public class PropertyAdminManagementServiceImpl
 
         propertyAdmin.setIsActive(false);
 
+        // ==========================================
+        // Save Updated Property Admin
+        // ==========================================
+
         userRepository.save(propertyAdmin);
+
+        // ==========================================
+        // Send Suspension Email
+        // ==========================================
+
+        notificationService.sendPropertyAdminSuspendedEmail(
+                propertyAdmin
+        );
 
     }
 
@@ -160,7 +176,19 @@ public class PropertyAdminManagementServiceImpl
 
         propertyAdmin.setIsActive(true);
 
+        // ==========================================
+        // Save Updated Property Admin
+        // ==========================================
+
         userRepository.save(propertyAdmin);
+
+        // ==========================================
+        // Send Reactivation Email
+        // ==========================================
+
+        notificationService.sendPropertyAdminReactivatedEmail(
+                propertyAdmin
+        );
 
     }
 

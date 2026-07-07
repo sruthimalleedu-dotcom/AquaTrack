@@ -15,6 +15,8 @@ public class PropertyRegistrationResponse {
 
     private Long id;
 
+    private Long propertyAdminId;
+
     private String companyName;
 
     private String contactPersonName;

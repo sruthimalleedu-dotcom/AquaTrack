@@ -204,6 +204,15 @@ public class PropertyRegistrationServiceImpl
         propertyAdmin = userRepository.save(propertyAdmin);
 
         // ==========================================
+        // Link Property Admin With Registration Request
+        // ==========================================
+
+        registrationRequest.setPropertyAdmin(
+                propertyAdmin
+        );
+
+
+        // ==========================================
         // Generate Invitation Token
         // ==========================================
 
@@ -295,8 +304,8 @@ public class PropertyRegistrationServiceImpl
     }
 
     // ==========================================
-// Reject Registration Request
-// ==========================================
+    // Reject Registration Request
+    // ==========================================
 
     @Override
     public void rejectRegistrationRequest(

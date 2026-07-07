@@ -6,6 +6,7 @@ import com.aquatrack.dto.auth.LoginResponse;
 import com.aquatrack.dto.auth.ResetPasswordRequest;
 import com.aquatrack.entity.PasswordResetToken;
 import com.aquatrack.entity.User;
+import com.aquatrack.notification.service.NotificationService;
 import com.aquatrack.repository.PasswordResetTokenRepository;
 import com.aquatrack.repository.UserRepository;
 import com.aquatrack.security.CustomUserDetails;
@@ -16,12 +17,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AuthServiceImpl implements AuthService {
 
     // ==========================================
@@ -38,12 +41,16 @@ public class AuthServiceImpl implements AuthService {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final NotificationService notificationService;
+
     // ==========================================
     // Login
     // ==========================================
 
     @Override
-    public LoginResponse login(LoginRequest request) {
+    public LoginResponse login(
+            LoginRequest request
+    ) {
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -52,9 +59,14 @@ public class AuthServiceImpl implements AuthService {
                 )
         );
 
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(
+                        request.getEmail()
+                )
                 .orElseThrow(() ->
-                        new RuntimeException("Invalid email or password"));
+                        new RuntimeException(
+                                "Invalid email or password."
+                        )
+                );
 
         String token = jwtService.generateToken(
                 new CustomUserDetails(user)
@@ -73,33 +85,68 @@ public class AuthServiceImpl implements AuthService {
     // ==========================================
 
     @Override
-    public void forgotPassword(ForgotPasswordRequest request) {
+    public void forgotPassword(
+            ForgotPasswordRequest request
+    ) {
 
-        User user = userRepository.findByEmail(request.getEmail())
+        // ==========================================
+        // Find User
+        // ==========================================
+
+        User user = userRepository.findByEmail(
+                        request.getEmail()
+                )
                 .orElseThrow(() ->
                         new RuntimeException(
-                                "User not found with email: " + request.getEmail()
-                        ));
+                                "User not found with email: "
+                                        + request.getEmail()
+                        )
+                );
 
-        // Remove previous reset tokens
-        passwordResetTokenRepository.deleteAllByUser(user);
+        // ==========================================
+        // Remove Previous Reset Tokens
+        // ==========================================
 
-        // Generate new reset token
+        passwordResetTokenRepository.deleteAllByUser(
+                user
+        );
+
+        // ==========================================
+        // Generate Reset Token
+        // ==========================================
+
         String token = UUID.randomUUID().toString();
 
-        PasswordResetToken passwordResetToken = PasswordResetToken.builder()
-                .user(user)
-                .token(token)
-                .expiresAt(LocalDateTime.now().plusMinutes(15))
-                .build();
+        PasswordResetToken passwordResetToken =
+                PasswordResetToken.builder()
+                        .user(user)
+                        .token(token)
+                        .expiresAt(
+                                LocalDateTime.now()
+                                        .plusMinutes(15)
+                        )
+                        .build();
 
-        passwordResetTokenRepository.save(passwordResetToken);
+        passwordResetTokenRepository.save(
+                passwordResetToken
+        );
 
-        // TODO: Replace with Email Service
-        System.out.println("==========================================");
-        System.out.println("Password Reset Link");
-        System.out.println("http://localhost:8080/api/auth/reset-password?token=" + token);
-        System.out.println("==========================================");
+        // ==========================================
+        // Build Reset Link
+        // ==========================================
+
+        String resetLink =
+                "http://localhost:3000/reset-password?token="
+                        + token;
+
+        // ==========================================
+        // Send Forgot Password Email
+        // ==========================================
+
+        notificationService.sendForgotPasswordEmail(
+                user,
+                resetLink
+        );
 
     }
 
@@ -108,36 +155,98 @@ public class AuthServiceImpl implements AuthService {
     // ==========================================
 
     @Override
-    public void resetPassword(ResetPasswordRequest request) {
+    public void resetPassword(
+            ResetPasswordRequest request
+    ) {
 
-        PasswordResetToken passwordResetToken = passwordResetTokenRepository
-                .findByToken(request.getToken())
-                .orElseThrow(() ->
-                        new RuntimeException("Invalid password reset token"));
+        // ==========================================
+        // Find Password Reset Token
+        // ==========================================
 
-        // Check if token has already been used
-        if (Boolean.TRUE.equals(passwordResetToken.getUsed())) {
-            throw new RuntimeException("Password reset token has already been used");
+        PasswordResetToken passwordResetToken =
+                passwordResetTokenRepository
+                        .findByToken(request.getToken())
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Invalid password reset token."
+                                )
+                        );
+
+        // ==========================================
+        // Validate Token Usage
+        // ==========================================
+
+        if (Boolean.TRUE.equals(
+                passwordResetToken.getUsed()
+        )) {
+
+            throw new RuntimeException(
+                    "Password reset token has already been used."
+            );
+
         }
 
-        // Check token expiry
-        if (passwordResetToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Password reset token has expired");
+        // ==========================================
+        // Validate Token Expiry
+        // ==========================================
+
+        if (passwordResetToken.getExpiresAt()
+                .isBefore(LocalDateTime.now())) {
+
+            throw new RuntimeException(
+                    "Password reset token has expired."
+            );
+
         }
 
-        // Update user password
+        // ==========================================
+        // Validate Password Confirmation
+        // ==========================================
+
+        if (!request.getNewPassword()
+                .equals(request.getConfirmPassword())) {
+
+            throw new IllegalArgumentException(
+                    "New password and confirm password do not match."
+            );
+
+        }
+
+        // ==========================================
+        // Update User Password
+        // ==========================================
+
         User user = passwordResetToken.getUser();
 
         user.setPassword(
-                passwordEncoder.encode(request.getNewPassword())
+                passwordEncoder.encode(
+                        request.getNewPassword()
+                )
         );
 
-        userRepository.save(user);
+        userRepository.save(
+                user
+        );
 
-        // Mark token as used
-        passwordResetToken.setUsed(true);
+        // ==========================================
+        // Mark Token As Used
+        // ==========================================
 
-        passwordResetTokenRepository.save(passwordResetToken);
+        passwordResetToken.setUsed(
+                true
+        );
+
+        passwordResetTokenRepository.save(
+                passwordResetToken
+        );
+
+        // ==========================================
+        // Send Password Reset Success Email
+        // ==========================================
+
+        notificationService.sendPasswordResetSuccessEmail(
+                user
+        );
 
     }
 

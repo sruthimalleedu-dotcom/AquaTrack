@@ -42,6 +42,11 @@ public class PropertyRegistrationMapper {
 
         return PropertyRegistrationResponse.builder()
                 .id(entity.getId())
+                .propertyAdminId(
+                        entity.getPropertyAdmin() != null
+                                ? entity.getPropertyAdmin().getId()
+                                : null
+                )
                 .companyName(entity.getCompanyName())
                 .contactPersonName(entity.getContactPersonName())
                 .email(entity.getEmail())
