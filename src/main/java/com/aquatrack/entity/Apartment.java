@@ -14,8 +14,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"propertyAdmin", "users", "households"})
-@EqualsAndHashCode(exclude = {"propertyAdmin", "users", "households"})
+@ToString(exclude = {"propertyAdmin", "users", "households", "buildings"})
+@EqualsAndHashCode(exclude = {"propertyAdmin", "users", "households", "buildings"})
 public class Apartment {
 
     // ==========================
@@ -70,6 +70,13 @@ public class Apartment {
     @OneToMany(mappedBy = "apartment", fetch = FetchType.LAZY)
     @Builder.Default
     private List<User> users = new ArrayList<>();
+
+    /**
+     * Buildings belonging to this apartment.
+     */
+    @OneToMany(mappedBy = "apartment", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Building> buildings = new ArrayList<>();
 
     /**
      * Households belonging to this apartment.

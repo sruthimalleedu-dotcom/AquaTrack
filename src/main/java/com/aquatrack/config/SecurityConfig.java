@@ -107,6 +107,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/apartments/**")
                         .hasAuthority("PROPERTY_ADMIN")
 
+                                .requestMatchers("/api/manager-invitations/**")
+                                .hasAuthority("PROPERTY_ADMIN")
+
+
+
                         // ==========================================
                         // All Other APIs
                         // ==========================================

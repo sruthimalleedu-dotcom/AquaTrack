@@ -1,23 +1,21 @@
 package com.aquatrack.entity;
 
-import com.aquatrack.enums.UserRole;
+import com.aquatrack.enums.ManagerInvitationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "manager_invitations")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"ownedApartments", "apartment", "building", "household"})
-@EqualsAndHashCode(exclude = {"ownedApartments", "apartment", "building", "household"})
-public class User {
+@ToString(exclude = {"apartment", "building", "invitedBy"})
+@EqualsAndHashCode(exclude = {"apartment", "building", "invitedBy"})
+public class ManagerInvitation {
 
     // ==========================
     // Primary Key
@@ -28,7 +26,7 @@ public class User {
     private Long id;
 
     // ==========================
-    // Basic Information
+    // Manager Information
     // ==========================
 
     @Column(name = "first_name", nullable = false, length = 100)
@@ -37,67 +35,53 @@ public class User {
     @Column(name = "last_name", length = 100)
     private String lastName;
 
-    @Column(name = "email", nullable = false, unique = true, length = 255)
+    @Column(name = "email", nullable = false, length = 255)
     private String email;
 
-    @Column(name = "password", nullable = false, length = 255)
-    private String password;
-
-    @Column(name = "phone", unique = true, length = 15)
+    @Column(name = "phone", length = 15)
     private String phone;
 
     // ==========================
-    // User Role
+    // Invitation Information
     // ==========================
+
+    @Column(name = "invitation_token", nullable = false, unique = true)
+    private String invitationToken;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, length = 30)
-    private UserRole role;
+    @Column(name = "status", nullable = false, length = 30)
+    private ManagerInvitationStatus status;
 
-    // ==========================
-    // User Status
-    // ==========================
+    @Column(name = "expires_at", nullable = false)
+    private LocalDateTime expiresAt;
 
-    @Column(name = "is_active", nullable = false)
-    @Builder.Default
-    private Boolean isActive = true;
+    @Column(name = "activated_at")
+    private LocalDateTime activatedAt;
 
     // ==========================
     // Relationships
     // ==========================
 
     /**
-     * Apartments owned by this Property Admin.
-     * Applicable only for users having PROPERTY_ADMIN role.
-     */
-    @OneToMany(mappedBy = "propertyAdmin", fetch = FetchType.LAZY)
-    @Builder.Default
-    private List<Apartment> ownedApartments = new ArrayList<>();
-
-    /**
-     * Apartment assigned to this user.
-     * Used for Managers and Residents.
+     * Apartment assigned to the manager.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "apartment_id")
+    @JoinColumn(name = "apartment_id", nullable = false)
     private Apartment apartment;
 
     /**
-     * Building assigned to this user.
-     * Used for Managers.
+     * Building assigned to the manager.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "building_id")
+    @JoinColumn(name = "building_id", nullable = false)
     private Building building;
 
-
     /**
-     * Household assigned to this user.
-     * Used for Residents.
+     * Property Admin who created the invitation.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "household_id")
-    private Household household;
+    @JoinColumn(name = "invited_by", nullable = false)
+    private User invitedBy;
 
     // ==========================
     // Audit Fields
@@ -119,8 +103,8 @@ public class User {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
 
-        if (isActive == null) {
-            isActive = true;
+        if (status == null) {
+            status = ManagerInvitationStatus.PENDING;
         }
     }
 
@@ -128,4 +112,5 @@ public class User {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
 }
