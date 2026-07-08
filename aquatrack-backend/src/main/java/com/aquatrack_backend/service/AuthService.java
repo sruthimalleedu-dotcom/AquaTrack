@@ -8,34 +8,37 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@Service // Marks this class as a Service component
-@RequiredArgsConstructor // Creates a constructor for final fields automatically
+@Service // Marks this class as a Service
+@RequiredArgsConstructor // Generates constructor for final fields
 public class AuthService {
 
-    // Repository to perform database operations
+    // Repository used to save and fetch users
     private final UserRepository userRepository;
 
-    // Used to encrypt passwords before saving
+    // Used to encrypt passwords before storing them
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * Registers a new user in the database.
+     */
     public AuthResponse register(RegisterRequest request) {
 
-        // Check if username is already taken
+        // Check if the username already exists
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            return new AuthResponse("Username already exists.");
         }
 
-        // Create a new User object from the request
+        // Create User object using Builder pattern
         User user = User.builder()
                 .username(request.getUsername())
-                .password(passwordEncoder.encode(request.getPassword())) // Encrypt password
+                .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .build();
 
-        // Save the user in the database
+        // Save user into database
         userRepository.save(user);
 
         // Return success response
-        return new AuthResponse("User Registered Successfully");
+        return new AuthResponse("User registered successfully.");
     }
 }

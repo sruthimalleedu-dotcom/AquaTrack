@@ -2,5 +2,6 @@ package com.aquatrack_backend.entity;
 
 public enum Role {
     ADMIN,
-    RESIDENT
+    RESIDENT,
+    RESIDENT_OWNER
 }

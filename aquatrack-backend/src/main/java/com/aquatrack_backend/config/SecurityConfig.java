@@ -18,18 +18,22 @@ public class SecurityConfig {
     @Bean // Configures Spring Security
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
+        System.out.println("========== MY SECURITY CONFIG LOADED =========");
         http
                 // Disable CSRF since we're testing REST APIs using Postman
                 .csrf(csrf -> csrf.disable())
 
                 // Configure which endpoints require authentication
                 .authorizeHttpRequests(auth -> auth
-                        // Allow anyone to access registration APIs
-                        .requestMatchers("/api/auth/**").permitAll()
+                // Public APIs
+                .requestMatchers(
+                        "/api/auth/**",
+                        "/api/registration/**"
+                ).permitAll()
 
-                        // Any other API will require authentication
-                        .anyRequest().authenticated()
-                );
+                // All other APIs require login
+                .anyRequest().authenticated()
+            );
 
         return http.build();
     }
