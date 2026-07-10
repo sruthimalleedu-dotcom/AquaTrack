@@ -6,6 +6,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.aquatrack_backend.dto.RegistrationRequestDTO;
+import com.aquatrack_backend.dto.RegistrationStatusResponse;
+import com.aquatrack_backend.dto.ResidentProfileDTO;
 
 //Handles Resident Owner registration requests.
  
@@ -21,17 +23,34 @@ public class RegistrationRequestController {
         this.requestService = requestService;
     }
 
-
     //Submit a new registration request.
-    
     @PostMapping("/submit")
     public ResponseEntity<RegistrationRequest> submitRequest(
-            @RequestBody RegistrationRequestDTO request) {
+        @RequestBody RegistrationRequestDTO request) {
         
-            System.out.println("========== REGISTRATION API HIT ==========");
+        System.out.println("========== REGISTRATION API HIT ==========");
         
-            RegistrationRequest savedRequest = requestService.submit(request);
-
+        RegistrationRequest savedRequest = requestService.submit(request);
         return new ResponseEntity<>(savedRequest, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/status/{email}")
+    public ResponseEntity<RegistrationStatusResponse> getStatus(
+        @PathVariable String email) {
+
+        return ResponseEntity.ok(requestService.getStatus(email));
+    }
+
+    //Returns resident profile details.
+    @GetMapping("/profile/{email}")
+    public ResponseEntity<ResidentProfileDTO> getProfile(
+
+            // Read email from URL
+            @PathVariable String email) {
+
+        // Call service and return resident profile
+        return ResponseEntity.ok(
+                requestService.getProfile(email)
+        );
     }
 }

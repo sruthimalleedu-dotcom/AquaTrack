@@ -3,42 +3,31 @@ package com.aquatrack_backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
-@Entity
+@Entity //tells Spring this class becomes a database table
 @Table(name = "registration_requests")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder //allows RegistrationRequest.builder()
 public class RegistrationRequest {
 
-    @Id
+    @Id //primary key
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    //auto-increment ID
+
     private Long id;
 
-    @Column(nullable = false)
     private String fullName;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String email;
 
-    @Column(nullable = false)
     private String phone;
 
-    @Column(nullable = false)
     private String buildingName;
 
-    @Column(nullable = false)
     private String apartmentNumber;
 
     @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private RequestStatus status = RequestStatus.PENDING;
-
-    private String activationToken;
-
-    @Builder.Default
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private RequestStatus status;
 }

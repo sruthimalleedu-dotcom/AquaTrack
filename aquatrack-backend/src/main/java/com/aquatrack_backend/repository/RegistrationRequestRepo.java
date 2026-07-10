@@ -7,11 +7,7 @@ import java.util.Optional;
 
 public interface RegistrationRequestRepo extends JpaRepository<RegistrationRequest, Long> {
 
-    // Find a registration request using email
     Optional<RegistrationRequest> findByEmail(String email);
 
-    // Check if a request with this email already exists
     boolean existsByEmail(String email);
-
-    
 }

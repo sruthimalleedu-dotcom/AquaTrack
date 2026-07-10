@@ -28,7 +28,8 @@ public class SecurityConfig {
                 // Public APIs
                 .requestMatchers(
                         "/api/auth/**",
-                        "/api/registration/**"
+                        "/api/registration/**",
+                        "/api/resident/**"
                 ).permitAll()
 
                 // All other APIs require login
