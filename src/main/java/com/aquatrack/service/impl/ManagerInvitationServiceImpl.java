@@ -16,8 +16,13 @@ import com.aquatrack.repository.UserRepository;
 import com.aquatrack.service.ManagerInvitationService;
 import com.aquatrack.util.SecurityUtil;
 import com.aquatrack.exception.DuplicateResourceException;
+import com.aquatrack.exception.BadRequestException;
 import org.springframework.security.access.AccessDeniedException;
 import com.aquatrack.enums.ManagerInvitationStatus;
+import com.aquatrack.enums.UserRole;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +52,8 @@ public class ManagerInvitationServiceImpl
 
     private final ManagerInvitationMapper managerInvitationMapper;
 
+    private final PasswordEncoder passwordEncoder;
+
     // ==========================
     // Create Manager Invitation
     // ==========================
@@ -75,6 +82,13 @@ public class ManagerInvitationServiceImpl
 
             throw new DuplicateResourceException(
                     "A user with this email already exists."
+            );
+        }
+
+        if (userRepository.existsByPhone(requestDto.getPhone())) {
+
+            throw new DuplicateResourceException(
+                    "A user with this phone number already exists."
             );
         }
 
@@ -127,9 +141,13 @@ public class ManagerInvitationServiceImpl
     @Transactional(readOnly = true)
     public List<ManagerInvitationResponseDto> getAllManagerInvitations() {
 
-        throw new UnsupportedOperationException(
-                "Implementation will be added in next step."
-        );
+        User propertyAdmin = getCurrentPropertyAdmin();
+
+        return managerInvitationRepository
+                .findAllByInvitedByOrderByCreatedAtDesc(propertyAdmin)
+                .stream()
+                .map(managerInvitationMapper::toResponseDto)
+                .toList();
     }
 
     // ==========================
@@ -141,9 +159,19 @@ public class ManagerInvitationServiceImpl
     public ManagerInvitationResponseDto getManagerInvitationById(
             Long invitationId) {
 
-        throw new UnsupportedOperationException(
-                "Implementation will be added in next step."
-        );
+        User propertyAdmin = getCurrentPropertyAdmin();
+
+        ManagerInvitation invitation = getManagerInvitation(invitationId);
+
+        if (!invitation.getInvitedBy().getId().equals(propertyAdmin.getId())) {
+
+            throw new ResourceNotFoundException(
+                    "Manager invitation not found with ID: "
+                            + invitationId
+            );
+        }
+
+        return managerInvitationMapper.toResponseDto(invitation);
     }
 
     // ==========================
@@ -154,9 +182,85 @@ public class ManagerInvitationServiceImpl
     public void activateManager(
             ManagerActivationRequestDto requestDto) {
 
-        throw new UnsupportedOperationException(
-                "Implementation will be added in next step."
-        );
+        // Fetch invitation using token
+        ManagerInvitation invitation =
+                managerInvitationRepository
+                        .findByInvitationToken(
+                                requestDto.getInvitationToken()
+                        )
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Invalid invitation token."
+                                )
+                        );
+
+        // Check invitation status
+        if (invitation.getStatus() != ManagerInvitationStatus.PENDING) {
+
+            throw new BadRequestException(
+                    "Invitation has already been used."
+            );
+        }
+
+        // Check invitation expiry
+        if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+
+            throw new BadRequestException(
+                    "Invitation has expired."
+            );
+        }
+
+        // Validate password confirmation
+        if (!requestDto.getPassword().equals(requestDto.getConfirmPassword())) {
+
+            throw new BadRequestException(
+                    "Password and Confirm Password do not match."
+            );
+        }
+
+        // Check if user already exists
+        if (userRepository.existsByEmailIgnoreCase(invitation.getEmail())) {
+
+            throw new DuplicateResourceException(
+                    "A user with this email already exists."
+            );
+        }
+
+        // Check if phone already exists
+        if (userRepository.existsByPhone(invitation.getPhone())) {
+
+            throw new DuplicateResourceException(
+                    "A user with this phone number already exists."
+            );
+        }
+
+        // Create Manager user
+        User manager = User.builder()
+                .firstName(invitation.getFirstName())
+                .lastName(invitation.getLastName())
+                .email(invitation.getEmail())
+                .phone(invitation.getPhone())
+                .password(
+                        passwordEncoder.encode(
+                                requestDto.getPassword()
+                        )
+                )
+                .role(UserRole.MANAGER)
+                .isActive(true)
+                .apartment(invitation.getApartment())
+                .building(invitation.getBuilding())
+                .build();
+
+        // Save manager
+        userRepository.save(manager);
+
+        // Update invitation
+        invitation.setStatus(ManagerInvitationStatus.ACTIVATED);
+        invitation.setActivatedAt(LocalDateTime.now());
+
+        // Save invitation
+        managerInvitationRepository.save(invitation);
+
     }
 
     // ==========================

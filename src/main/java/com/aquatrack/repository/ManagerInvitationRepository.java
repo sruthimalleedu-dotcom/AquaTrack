@@ -1,5 +1,6 @@
 package com.aquatrack.repository;
 
+import com.aquatrack.entity.User;
 import com.aquatrack.entity.ManagerInvitation;
 import com.aquatrack.enums.ManagerInvitationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -57,6 +58,14 @@ public interface ManagerInvitationRepository
     boolean existsByEmailIgnoreCaseAndStatus(
             String email,
             ManagerInvitationStatus status
+    );
+
+    // ==========================================
+    // Find By Property Admin
+    // ==========================================
+
+    List<ManagerInvitation> findAllByInvitedByOrderByCreatedAtDesc(
+            User invitedBy
     );
 
 }

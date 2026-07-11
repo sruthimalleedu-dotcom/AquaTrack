@@ -1,5 +1,6 @@
 package com.aquatrack.service.impl;
 
+
 import com.aquatrack.dto.auth.ForgotPasswordRequest;
 import com.aquatrack.dto.auth.LoginRequest;
 import com.aquatrack.dto.auth.LoginResponse;
@@ -12,10 +13,11 @@ import com.aquatrack.repository.UserRepository;
 import com.aquatrack.security.CustomUserDetails;
 import com.aquatrack.security.JwtService;
 import com.aquatrack.service.AuthService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Transactional
 public class AuthServiceImpl implements AuthService {
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
 
     // ==========================================
     // Dependencies
@@ -136,9 +141,7 @@ public class AuthServiceImpl implements AuthService {
         // ==========================================
 
         String resetLink =
-                "http://localhost:3000/reset-password?token="
-                        + token;
-
+                frontendUrl + "/reset-password?token=" + token;
         // ==========================================
         // Send Forgot Password Email
         // ==========================================

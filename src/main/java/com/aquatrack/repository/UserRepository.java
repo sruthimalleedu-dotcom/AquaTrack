@@ -30,4 +30,20 @@ public interface UserRepository extends JpaRepository<User, Long> {
             UserRole role
     );
 
+    // ==========================================
+    // Super Admin Dashboard
+    // ==========================================
+
+    long countByRole(
+            UserRole role
+    );
+
+    long countByRoleAndIsActiveTrue(
+            UserRole role
+    );
+
+    long countByRoleAndIsActiveFalse(
+            UserRole role
+    );
+
 }

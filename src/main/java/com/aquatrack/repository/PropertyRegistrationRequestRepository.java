@@ -26,4 +26,8 @@ public interface PropertyRegistrationRequestRepository
             RegistrationStatus status
     );
 
+    long countByStatus(
+            RegistrationStatus status
+    );
+
 }

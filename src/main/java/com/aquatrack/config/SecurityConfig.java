@@ -93,6 +93,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/test/**")
                         .permitAll()
 
+                                .requestMatchers("/api/manager-invitations/activate")
+                                .permitAll()
+
                         // ==========================================
                         // SUPER_ADMIN APIs
                         // ==========================================
