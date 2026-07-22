@@ -15,21 +15,33 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"ownedApartments", "apartment", "building", "household"})
-@EqualsAndHashCode(exclude = {"ownedApartments", "apartment", "building", "household"})
+@ToString(exclude = {
+        "ownedApartments",
+        "apartment",
+        "household",
+        "managerBuildings",
+        "uploadedWaterUsageLogs"
+})
+@EqualsAndHashCode(exclude = {
+        "ownedApartments",
+        "apartment",
+        "household",
+        "managerBuildings",
+        "uploadedWaterUsageLogs"
+})
 public class User {
 
-    // ==========================
+    // ==========================================
     // Primary Key
-    // ==========================
+    // ==========================================
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ==========================
+    // ==========================================
     // Basic Information
-    // ==========================
+    // ==========================================
 
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
@@ -40,38 +52,45 @@ public class User {
     @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "password", nullable = false, length = 255)
+    /**
+     * Password will be null until the resident
+     * accepts the invitation and creates one.
+     */
+    @Column(name = "password", length = 255)
     private String password;
 
     @Column(name = "phone", unique = true, length = 15)
     private String phone;
 
-    // ==========================
+    // ==========================================
     // User Role
-    // ==========================
+    // ==========================================
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false, length = 30)
     private UserRole role;
 
-    // ==========================
-    // User Status
-    // ==========================
+    // ==========================================
+    // Account Status
+    // ==========================================
 
-    @Column(name = "is_active", nullable = false)
+    /**
+     * true  -> User can log in.
+     * false -> Invitation pending or account disabled.
+     */
     @Builder.Default
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
-    // ==========================
+    // ==========================================
     // Relationships
-    // ==========================
+    // ==========================================
 
     /**
      * Apartments owned by this Property Admin.
-     * Applicable only for users having PROPERTY_ADMIN role.
      */
-    @OneToMany(mappedBy = "propertyAdmin", fetch = FetchType.LAZY)
     @Builder.Default
+    @OneToMany(mappedBy = "propertyAdmin", fetch = FetchType.LAZY)
     private List<Apartment> ownedApartments = new ArrayList<>();
 
     /**
@@ -83,25 +102,36 @@ public class User {
     private Apartment apartment;
 
     /**
-     * Building assigned to this user.
-     * Used for Managers.
+     * Buildings assigned to this Manager.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "building_id")
-    private Building building;
-
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "manager",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<ManagerBuilding> managerBuildings = new ArrayList<>();
 
     /**
-     * Household assigned to this user.
-     * Used for Residents.
+     * Household assigned to this Resident.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "household_id")
     private Household household;
 
-    // ==========================
+    /**
+     * Water usage logs uploaded by this user.
+     * Typically used for Managers who manually
+     * record or upload household meter readings.
+     */
+    @Builder.Default
+    @OneToMany(mappedBy = "uploadedBy", fetch = FetchType.LAZY)
+    private List<WaterUsageLog> uploadedWaterUsageLogs = new ArrayList<>();
+
+    // ==========================================
     // Audit Fields
-    // ==========================
+    // ==========================================
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -109,9 +139,9 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // ==========================
+    // ==========================================
     // Lifecycle Methods
-    // ==========================
+    // ==========================================
 
     @PrePersist
     protected void onCreate() {

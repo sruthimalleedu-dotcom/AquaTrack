@@ -61,4 +61,12 @@ public interface ApartmentRepository extends JpaRepository<Apartment, Long> {
             Long id
     );
 
+    // ==========================================
+    // Property Admin Dashboard
+    // ==========================================
+
+    long countByPropertyAdmin(
+            User propertyAdmin
+    );
+
 }

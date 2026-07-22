@@ -4,17 +4,19 @@ import com.aquatrack.enums.ManagerInvitationStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class ManagerInvitationResponseDto {
 
-    // ==========================
+    // ==========================================
     // Invitation Information
-    // ==========================
+    // ==========================================
 
     private Long id;
 
@@ -26,21 +28,23 @@ public class ManagerInvitationResponseDto {
 
     private String phone;
 
-    // ==========================
-    // Assignment Information
-    // ==========================
+    // ==========================================
+    // Apartment Information
+    // ==========================================
 
     private Long apartmentId;
 
     private String apartmentName;
 
-    private Long buildingId;
+    // ==========================================
+    // Assigned Buildings
+    // ==========================================
 
-    private String buildingName;
+    private List<BuildingAssignmentDto> buildings;
 
-    // ==========================
+    // ==========================================
     // Invitation Status
-    // ==========================
+    // ==========================================
 
     private ManagerInvitationStatus status;
 
@@ -50,9 +54,9 @@ public class ManagerInvitationResponseDto {
 
     private String invitedByName;
 
-    // ==========================
-    // Audit Fields
-    // ==========================
+    // ==========================================
+    // Audit
+    // ==========================================
 
     private LocalDateTime createdAt;
 

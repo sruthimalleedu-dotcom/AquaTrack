@@ -1,13 +1,17 @@
 package com.aquatrack.service.impl;
 
-import com.aquatrack.dto.apartment.*;
+import com.aquatrack.dto.apartment.ApartmentCreateRequest;
+import com.aquatrack.dto.apartment.ApartmentResponse;
+import com.aquatrack.dto.apartment.ApartmentSummaryResponse;
+import com.aquatrack.dto.apartment.ApartmentUpdateRequest;
 import com.aquatrack.entity.Apartment;
+import com.aquatrack.entity.User;
 import com.aquatrack.exception.DuplicateResourceException;
 import com.aquatrack.exception.ResourceNotFoundException;
 import com.aquatrack.mapper.ApartmentMapper;
 import com.aquatrack.repository.ApartmentRepository;
+import com.aquatrack.repository.BuildingRepository;
 import com.aquatrack.service.ApartmentService;
-import com.aquatrack.entity.User;
 import com.aquatrack.service.CurrentUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,24 +28,22 @@ public class ApartmentServiceImpl implements ApartmentService {
 
     private final ApartmentRepository apartmentRepository;
 
+    private final BuildingRepository buildingRepository;
+
     private final ApartmentMapper apartmentMapper;
 
     private final CurrentUserService currentUserService;
 
+    // ==========================================
+    // Create Apartment
+    // ==========================================
+
     @Override
     public ApartmentResponse createApartment(
-            ApartmentCreateRequest request) {
+            ApartmentCreateRequest request
+    ) {
 
-        // ==========================================
-        // Get Logged-in Property Admin
-        // ==========================================
-
-        User propertyAdmin =
-                currentUserService.getCurrentUser();
-
-        // ==========================================
-        // Check Duplicate Apartment
-        // ==========================================
+        User propertyAdmin = currentUserService.getCurrentUser();
 
         if (apartmentRepository
                 .existsByApartmentNameIgnoreCaseAndPincodeAndPropertyAdmin(
@@ -56,51 +58,28 @@ public class ApartmentServiceImpl implements ApartmentService {
 
         }
 
-        // ==========================================
-        // Convert DTO -> Entity
-        // ==========================================
-
-        Apartment apartment =
-                apartmentMapper.toEntity(request);
-
-        // ==========================================
-        // Assign Property Admin
-        // ==========================================
+        Apartment apartment = apartmentMapper.toEntity(request);
 
         apartment.setPropertyAdmin(propertyAdmin);
-
-        // ==========================================
-        // Save Apartment
-        // ==========================================
 
         Apartment savedApartment =
                 apartmentRepository.save(apartment);
 
-        // ==========================================
-        // Convert Entity -> Response
-        // ==========================================
-
-        return apartmentMapper.toResponse(savedApartment);
+        return buildResponse(savedApartment);
 
     }
 
+    // ==========================================
+    // Get Apartment By Id
+    // ==========================================
+
     @Override
-    public ApartmentResponse getApartmentById(Long apartmentId) {
-
-        // ==========================================
-        // Find Apartment
-        // ==========================================
-
-        // ==========================================
-        // Get Logged-in Property Admin
-        // ==========================================
+    public ApartmentResponse getApartmentById(
+            Long apartmentId
+    ) {
 
         User propertyAdmin =
                 currentUserService.getCurrentUser();
-
-        // ==========================================
-        // Find Apartment
-        // ==========================================
 
         Apartment apartment = apartmentRepository
                 .findByIdAndPropertyAdmin(
@@ -111,51 +90,53 @@ public class ApartmentServiceImpl implements ApartmentService {
                         new ResourceNotFoundException(
                                 "Apartment not found with id: " + apartmentId
                         ));
-        // ==========================================
-        // Convert Entity -> Response
-        // ==========================================
 
-        return apartmentMapper.toResponse(apartment);
+        return buildResponse(apartment);
 
     }
+
+    // ==========================================
+    // Get All Apartments
+    // ==========================================
 
     @Override
     public List<ApartmentSummaryResponse> getAllApartments() {
 
-        // ==========================================
-        // Get Logged-in Property Admin
-        // ==========================================
-
         User propertyAdmin =
                 currentUserService.getCurrentUser();
-
-        // ==========================================
-        // Fetch Only Current Property Admin Apartments
-        // ==========================================
 
         return apartmentRepository
                 .findAllByPropertyAdmin(propertyAdmin)
                 .stream()
-                .map(apartmentMapper::toSummaryResponse)
+                .map(apartment ->
+
+                        ApartmentSummaryResponse.builder()
+                                .id(apartment.getId())
+                                .apartmentName(apartment.getApartmentName())
+                                .city(apartment.getCity())
+                                .state(apartment.getState())
+                                .totalBuildings(
+                                        buildingRepository.countByApartment(apartment)
+                                )
+                                .build()
+
+                )
                 .toList();
 
     }
 
+    // ==========================================
+    // Update Apartment
+    // ==========================================
+
     @Override
     public ApartmentResponse updateApartment(
             Long apartmentId,
-            ApartmentUpdateRequest request) {
-
-        // ==========================================
-        // Get Logged-in Property Admin
-        // ==========================================
+            ApartmentUpdateRequest request
+    ) {
 
         User propertyAdmin =
                 currentUserService.getCurrentUser();
-
-        // ==========================================
-        // Find Apartment
-        // ==========================================
 
         Apartment apartment = apartmentRepository
                 .findByIdAndPropertyAdmin(
@@ -166,10 +147,6 @@ public class ApartmentServiceImpl implements ApartmentService {
                         new ResourceNotFoundException(
                                 "Apartment not found with id: " + apartmentId
                         ));
-
-        // ==========================================
-        // Check Duplicate Apartment
-        // ==========================================
 
         if (apartmentRepository
                 .existsByApartmentNameIgnoreCaseAndPincodeAndPropertyAdminAndIdNot(
@@ -185,44 +162,29 @@ public class ApartmentServiceImpl implements ApartmentService {
 
         }
 
-        // ==========================================
-        // Update Entity
-        // ==========================================
-
         apartmentMapper.updateEntity(
                 apartment,
                 request
         );
 
-        // ==========================================
-        // Save Updated Apartment
-        // ==========================================
-
         Apartment updatedApartment =
                 apartmentRepository.save(apartment);
 
-        // ==========================================
-        // Convert Entity -> Response
-        // ==========================================
-
-        return apartmentMapper.toResponse(updatedApartment);
+        return buildResponse(updatedApartment);
 
     }
 
+    // ==========================================
+    // Delete Apartment
+    // ==========================================
+
     @Override
     public void deleteApartment(
-            Long apartmentId) {
-
-        // ==========================================
-        // Get Logged-in Property Admin
-        // ==========================================
+            Long apartmentId
+    ) {
 
         User propertyAdmin =
                 currentUserService.getCurrentUser();
-
-        // ==========================================
-        // Find Apartment
-        // ==========================================
 
         Apartment apartment = apartmentRepository
                 .findByIdAndPropertyAdmin(
@@ -234,11 +196,33 @@ public class ApartmentServiceImpl implements ApartmentService {
                                 "Apartment not found with id: " + apartmentId
                         ));
 
-        // ==========================================
-        // Delete Apartment
-        // ==========================================
-
         apartmentRepository.delete(apartment);
 
     }
+
+    // ==========================================
+    // Entity -> Response
+    // ==========================================
+
+    private ApartmentResponse buildResponse(
+            Apartment apartment
+    ) {
+
+        return ApartmentResponse.builder()
+                .id(apartment.getId())
+                .apartmentName(apartment.getApartmentName())
+                .addressLine1(apartment.getAddressLine1())
+                .addressLine2(apartment.getAddressLine2())
+                .city(apartment.getCity())
+                .state(apartment.getState())
+                .pincode(apartment.getPincode())
+                .totalBuildings(
+                        buildingRepository.countByApartment(apartment)
+                )
+                .createdAt(apartment.getCreatedAt())
+                .updatedAt(apartment.getUpdatedAt())
+                .build();
+
+    }
+
 }

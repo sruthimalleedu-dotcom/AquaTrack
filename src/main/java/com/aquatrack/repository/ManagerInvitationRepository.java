@@ -1,7 +1,7 @@
 package com.aquatrack.repository;
 
-import com.aquatrack.entity.User;
 import com.aquatrack.entity.ManagerInvitation;
+import com.aquatrack.entity.User;
 import com.aquatrack.enums.ManagerInvitationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -41,14 +41,6 @@ public interface ManagerInvitationRepository
 
     List<ManagerInvitation> findAllByApartmentIdOrderByCreatedAtDesc(
             Long apartmentId
-    );
-
-    // ==========================================
-    // Find By Building
-    // ==========================================
-
-    List<ManagerInvitation> findAllByBuildingIdOrderByCreatedAtDesc(
-            Long buildingId
     );
 
     // ==========================================

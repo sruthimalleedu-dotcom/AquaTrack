@@ -17,8 +17,9 @@ import com.aquatrack.repository.PropertyRegistrationRequestRepository;
 import com.aquatrack.repository.UserRepository;
 import com.aquatrack.service.PropertyRegistrationService;
 import com.aquatrack.service.CurrentUserService;
-import com.aquatrack.notification.service.NotificationService;
 import com.aquatrack.entity.PropertyAdminInvitation;
+import com.aquatrack.notification.service.NotificationService;
+import org.springframework.beans.factory.annotation.Value;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,9 @@ public class PropertyRegistrationServiceImpl
     private final CurrentUserService currentUserService;
 
     private final NotificationService notificationService;
+
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
 
     // ==========================================
     // Submit Registration Request
@@ -278,9 +282,10 @@ public class PropertyRegistrationServiceImpl
         // ==========================================
 
         String activationLink =
-                "http://localhost:8080/api/property-admin/activate?token="
+                frontendUrl +
+                        "/property-admin/activate?token="
                         + token;
-
+        System.out.println("Activation Link = " + activationLink);
         // ==========================================
         // Send Registration Approval Email
         // ==========================================

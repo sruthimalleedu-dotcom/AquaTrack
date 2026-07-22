@@ -2,21 +2,25 @@ package com.aquatrack.dto.manager;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class CreateManagerInvitationRequestDto {
 
-    // ==========================
+    // ==========================================
     // Manager Information
-    // ==========================
+    // ==========================================
 
     @NotBlank(message = "First name is required.")
     @Size(max = 100, message = "First name cannot exceed 100 characters.")
@@ -37,14 +41,14 @@ public class CreateManagerInvitationRequestDto {
     )
     private String phone;
 
-    // ==========================
+    // ==========================================
     // Assignment
-    // ==========================
+    // ==========================================
 
     @NotNull(message = "Apartment ID is required.")
     private Long apartmentId;
 
-    @NotNull(message = "Building ID is required.")
-    private Long buildingId;
+    @NotEmpty(message = "Please select at least one building.")
+    private List<Long> buildingIds;
 
 }

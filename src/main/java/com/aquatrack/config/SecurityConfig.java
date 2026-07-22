@@ -29,7 +29,9 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
+
         return new BCryptPasswordEncoder();
+
     }
 
     // ==========================================
@@ -38,8 +40,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration configuration)
-            throws Exception {
+            AuthenticationConfiguration configuration
+    ) throws Exception {
 
         return configuration.getAuthenticationManager();
 
@@ -50,17 +52,24 @@ public class SecurityConfig {
     // ==========================================
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
-            throws Exception {
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http
+    ) throws Exception {
 
         http
 
-                // Disable default security features
+                // ==========================================
+                // Disable Default Security
+                // ==========================================
+
                 .csrf(csrf -> csrf.disable())
                 .httpBasic(httpBasic -> httpBasic.disable())
                 .formLogin(form -> form.disable())
 
-                // Stateless JWT Authentication
+                // ==========================================
+                // Stateless Session
+                // ==========================================
+
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(
                                 SessionCreationPolicy.STATELESS
@@ -73,10 +82,6 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-
-//                                        .anyRequest().permitAll()
-
-
                         // ==========================================
                         // Public APIs
                         // ==========================================
@@ -87,14 +92,23 @@ public class SecurityConfig {
                         .requestMatchers("/api/property-registration/**")
                         .permitAll()
 
-                        .requestMatchers("/api/property-admin/**")
+                        // Property Admin Activation / Registration
+                        .requestMatchers(
+                                "/api/property-admin/register",
+                                "/api/property-admin/activate"
+                        )
                         .permitAll()
 
                         .requestMatchers("/api/test/**")
                         .permitAll()
 
-                                .requestMatchers("/api/manager-invitations/activate")
-                                .permitAll()
+                        // Manager Invitation Activation
+                        .requestMatchers("/api/manager-invitations/activate")
+                        .permitAll()
+
+                        // Resident Invitation Activation
+                        .requestMatchers("/api/resident-invitations/activate")
+                        .permitAll()
 
                         // ==========================================
                         // SUPER_ADMIN APIs
@@ -110,10 +124,28 @@ public class SecurityConfig {
                         .requestMatchers("/api/apartments/**")
                         .hasAuthority("PROPERTY_ADMIN")
 
-                                .requestMatchers("/api/manager-invitations/**")
-                                .hasAuthority("PROPERTY_ADMIN")
+                        .requestMatchers("/api/manager-invitations/**")
+                        .hasAuthority("PROPERTY_ADMIN")
 
+                        .requestMatchers("/api/property-admin/**")
+                        .hasAuthority("PROPERTY_ADMIN")
 
+                        // ==========================================
+                        // MANAGER APIs
+                        // ==========================================
+
+                        .requestMatchers("/api/manager/**")
+                        .hasAuthority("MANAGER")
+
+                        .requestMatchers("/api/resident-invitations/**")
+                        .hasAuthority("MANAGER")
+
+                        // ==========================================
+                        // RESIDENT APIs (Future)
+                        // ==========================================
+
+                        .requestMatchers("/api/resident/**")
+                        .hasAuthority("RESIDENT")
 
                         // ==========================================
                         // All Other APIs
@@ -125,7 +157,7 @@ public class SecurityConfig {
                 )
 
                 // ==========================================
-                // JWT Filter
+                // JWT Authentication Filter
                 // ==========================================
 
                 .addFilterBefore(

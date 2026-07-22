@@ -13,6 +13,8 @@ import com.aquatrack.service.BuildingService;
 import com.aquatrack.entity.User;
 import org.springframework.security.access.AccessDeniedException;
 import com.aquatrack.repository.UserRepository;
+import com.aquatrack.entity.ManagerBuilding;
+import com.aquatrack.repository.ManagerBuildingRepository;
 import com.aquatrack.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,6 +38,8 @@ public class BuildingServiceImpl implements BuildingService {
     private final BuildingMapper buildingMapper;
 
     private final UserRepository userRepository;
+
+    private final ManagerBuildingRepository managerBuildingRepository;
 
     // ==========================
     // Create Building
@@ -183,6 +187,25 @@ public class BuildingServiceImpl implements BuildingService {
     }
 
     // ==========================
+// Manager Buildings
+// ==========================
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<BuildingResponseDto> getManagerBuildings() {
+
+        User manager = getCurrentUser();
+
+        return managerBuildingRepository
+                .findByManager(manager)
+                .stream()
+                .map(ManagerBuilding::getBuilding)
+                .map(buildingMapper::toResponseDto)
+                .toList();
+
+    }
+
+    // ==========================
     // Helper Methods
     // ==========================
 
@@ -196,14 +219,7 @@ public class BuildingServiceImpl implements BuildingService {
     private Apartment getOwnedApartment(Long apartmentId) {
 
         // Get logged-in user's email
-        String email = SecurityUtil.getCurrentUserEmail();
-
-        // Fetch logged-in Property Admin
-        User propertyAdmin = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Logged-in user not found."
-                        ));
+        User propertyAdmin = getCurrentUser();
 
         // Fetch apartment
         Apartment apartment = apartmentRepository.findById(apartmentId)
@@ -244,6 +260,23 @@ public class BuildingServiceImpl implements BuildingService {
                         new ResourceNotFoundException(
                                 "Building not found with ID: " + buildingId
                         ));
+    }
+
+    /**
+     * Returns the currently logged-in user.
+     *
+     * @return Logged-in user
+     */
+    private User getCurrentUser() {
+
+        String email = SecurityUtil.getCurrentUserEmail();
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Logged-in user not found."
+                        ));
+
     }
 
 }

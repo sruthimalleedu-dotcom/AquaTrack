@@ -1,5 +1,6 @@
 package com.aquatrack.repository;
 
+import com.aquatrack.entity.Apartment;
 import com.aquatrack.entity.Building;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -15,13 +16,12 @@ import java.util.Optional;
 @Repository
 public interface BuildingRepository extends JpaRepository<Building, Long> {
 
-    // ==========================
-    // Exists Methods
-    // ==========================
+    // ==========================================
+    // Exists Validation
+    // ==========================================
 
     /**
-     * Checks whether a building name already exists
-     * within the given apartment.
+     * Check duplicate building name inside an apartment.
      */
     boolean existsByApartmentIdAndBuildingNameIgnoreCase(
             Long apartmentId,
@@ -29,8 +29,7 @@ public interface BuildingRepository extends JpaRepository<Building, Long> {
     );
 
     /**
-     * Checks whether a building code already exists
-     * within the given apartment.
+     * Check duplicate building code inside an apartment.
      */
     boolean existsByApartmentIdAndBuildingCodeIgnoreCase(
             Long apartmentId,
@@ -38,8 +37,7 @@ public interface BuildingRepository extends JpaRepository<Building, Long> {
     );
 
     /**
-     * Checks whether another building with the same name
-     * exists while updating.
+     * Check duplicate building name while updating.
      */
     boolean existsByApartmentIdAndBuildingNameIgnoreCaseAndIdNot(
             Long apartmentId,
@@ -48,8 +46,7 @@ public interface BuildingRepository extends JpaRepository<Building, Long> {
     );
 
     /**
-     * Checks whether another building with the same code
-     * exists while updating.
+     * Check duplicate building code while updating.
      */
     boolean existsByApartmentIdAndBuildingCodeIgnoreCaseAndIdNot(
             Long apartmentId,
@@ -57,21 +54,55 @@ public interface BuildingRepository extends JpaRepository<Building, Long> {
             Long id
     );
 
-    // ==========================
+    // ==========================================
     // Find Methods
-    // ==========================
+    // ==========================================
 
     /**
-     * Returns all buildings of an apartment.
+     * Get all buildings of an apartment.
      */
-    List<Building> findByApartmentId(Long apartmentId);
+    List<Building> findByApartmentId(
+            Long apartmentId
+    );
 
     /**
-     * Returns a building by building id and apartment id.
+     * Find building by apartment and building id.
      */
     Optional<Building> findByIdAndApartmentId(
             Long id,
             Long apartmentId
+    );
+
+    /**
+     * Get all buildings of an apartment.
+     */
+    List<Building> findByApartment(
+            Apartment apartment
+    );
+
+    // ==========================================
+    // Dashboard Statistics
+    // ==========================================
+
+    /**
+     * Total buildings of one apartment.
+     */
+    long countByApartment(
+            Apartment apartment
+    );
+
+    /**
+     * Total buildings using apartment id.
+     */
+    long countByApartmentId(
+            Long apartmentId
+    );
+
+    /**
+     * Total buildings across multiple apartments.
+     */
+    long countByApartmentIn(
+            List<Apartment> apartments
     );
 
 }

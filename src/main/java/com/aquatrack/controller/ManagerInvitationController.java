@@ -7,8 +7,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import com.aquatrack.service.ManagerInvitationService;
 import com.aquatrack.dto.manager.ManagerInvitationResponseDto;
+import com.aquatrack.dto.manager.ManagerActivationDetailsResponseDto;
 
-
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
 import jakarta.validation.Valid;
@@ -20,11 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 import java.util.List;
-/**
- * REST Controller for Manager Invitation Management.
- *
- * Handles Manager Invitation operations.
- */
+
 @RestController
 @RequestMapping("/api/manager-invitations")
 @RequiredArgsConstructor
@@ -89,6 +86,32 @@ public class ManagerInvitationController {
                         )
                 )
         );
+    }
+
+    // ==========================================
+    // Get Activation Details
+    // ==========================================
+
+    @GetMapping("/activate")
+    public ResponseEntity<ApiResponse<ManagerActivationDetailsResponseDto>>
+    getActivationDetails(
+            @RequestParam String token
+    ) {
+
+        return ResponseEntity.ok(
+
+                ApiResponse.success(
+
+                        "Invitation validated successfully.",
+
+                        managerInvitationService.getActivationDetails(
+                                token
+                        )
+
+                )
+
+        );
+
     }
 
     // ==========================

@@ -1,9 +1,9 @@
 package com.aquatrack.mapper;
 
+import com.aquatrack.dto.manager.BuildingAssignmentDto;
 import com.aquatrack.dto.manager.CreateManagerInvitationRequestDto;
 import com.aquatrack.dto.manager.ManagerInvitationResponseDto;
 import com.aquatrack.entity.Apartment;
-import com.aquatrack.entity.Building;
 import com.aquatrack.entity.ManagerInvitation;
 import com.aquatrack.entity.User;
 import org.springframework.stereotype.Component;
@@ -11,25 +11,19 @@ import org.springframework.stereotype.Component;
 @Component
 public class ManagerInvitationMapper {
 
-    // ==========================
+    // ==========================================
     // Entity Mapping
-    // ==========================
+    // ==========================================
 
     /**
      * Converts CreateManagerInvitationRequestDto
      * to ManagerInvitation entity.
-     *
-     * @param requestDto Create Manager Request
-     * @param apartment Apartment
-     * @param building Building
-     * @param invitedBy Property Admin
-     * @return ManagerInvitation entity
      */
     public ManagerInvitation toEntity(
             CreateManagerInvitationRequestDto requestDto,
             Apartment apartment,
-            Building building,
-            User invitedBy) {
+            User invitedBy
+    ) {
 
         return ManagerInvitation.builder()
                 .firstName(requestDto.getFirstName())
@@ -37,45 +31,110 @@ public class ManagerInvitationMapper {
                 .email(requestDto.getEmail())
                 .phone(requestDto.getPhone())
                 .apartment(apartment)
-                .building(building)
                 .invitedBy(invitedBy)
                 .build();
+
     }
 
-    // ==========================
+    // ==========================================
     // Response DTO Mapping
-    // ==========================
+    // ==========================================
 
     /**
      * Converts ManagerInvitation entity
      * to Response DTO.
-     *
-     * @param invitation Manager Invitation
-     * @return Response DTO
      */
     public ManagerInvitationResponseDto toResponseDto(
-            ManagerInvitation invitation) {
+            ManagerInvitation invitation
+    ) {
 
         return ManagerInvitationResponseDto.builder()
+
+                // ==========================================
+                // Invitation Information
+                // ==========================================
+
                 .id(invitation.getId())
                 .firstName(invitation.getFirstName())
                 .lastName(invitation.getLastName())
                 .email(invitation.getEmail())
                 .phone(invitation.getPhone())
 
-                .apartmentId(invitation.getApartment().getId())
-                .apartmentName(invitation.getApartment().getApartmentName())
+                // ==========================================
+                // Apartment
+                // ==========================================
 
-                .buildingId(invitation.getBuilding().getId())
-                .buildingName(invitation.getBuilding().getBuildingName())
+                .apartmentId(
+                        invitation.getApartment().getId()
+                )
+                .apartmentName(
+                        invitation.getApartment().getApartmentName()
+                )
+
+                // ==========================================
+                // Buildings
+                // ==========================================
+
+                .buildings(
+
+                        invitation.getAssignedBuildings()
+                                .stream()
+                                .map(assignment ->
+
+                                        BuildingAssignmentDto.builder()
+
+                                                .id(
+                                                        assignment.getBuilding().getId()
+                                                )
+
+                                                .buildingName(
+                                                        assignment.getBuilding().getBuildingName()
+                                                )
+
+                                                .buildingCode(
+                                                        assignment.getBuilding().getBuildingCode()
+                                                )
+
+                                                .build()
+
+                                )
+                                .toList()
+
+                )
+
+                // ==========================================
+                // Invitation Status
+                // ==========================================
 
                 .status(invitation.getStatus())
                 .expiresAt(invitation.getExpiresAt())
                 .activatedAt(invitation.getActivatedAt())
 
+                // ==========================================
+                // Property Admin
+                // ==========================================
+
+                .invitedByName(
+
+                        invitation.getInvitedBy().getFirstName()
+
+                                + " "
+
+                                + (invitation.getInvitedBy().getLastName() == null
+                                ? ""
+                                : invitation.getInvitedBy().getLastName())
+
+                )
+
+                // ==========================================
+                // Audit
+                // ==========================================
+
                 .createdAt(invitation.getCreatedAt())
                 .updatedAt(invitation.getUpdatedAt())
+
                 .build();
+
     }
 
 }

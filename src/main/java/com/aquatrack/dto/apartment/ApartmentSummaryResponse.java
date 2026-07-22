@@ -11,7 +11,7 @@ import lombok.*;
 public class ApartmentSummaryResponse {
 
     // ==========================================
-    // Apartment Summary
+    // Apartment Information
     // ==========================================
 
     private Long id;
@@ -22,6 +22,10 @@ public class ApartmentSummaryResponse {
 
     private String state;
 
-    private Integer totalHouseholds;
+    // ==========================================
+    // Statistics
+    // ==========================================
+
+    private Long totalBuildings;
 
 }

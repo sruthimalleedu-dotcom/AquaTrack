@@ -34,7 +34,7 @@ public class ApartmentResponse {
     // Statistics
     // ==========================================
 
-    private Integer totalHouseholds;
+    private Long totalBuildings;
 
     // ==========================================
     // Audit Information

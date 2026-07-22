@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "manager_invitations")
@@ -13,21 +15,29 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"apartment", "building", "invitedBy"})
-@EqualsAndHashCode(exclude = {"apartment", "building", "invitedBy"})
+@ToString(exclude = {
+        "apartment",
+        "assignedBuildings",
+        "invitedBy"
+})
+@EqualsAndHashCode(exclude = {
+        "apartment",
+        "assignedBuildings",
+        "invitedBy"
+})
 public class ManagerInvitation {
 
-    // ==========================
+    // ==========================================
     // Primary Key
-    // ==========================
+    // ==========================================
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ==========================
+    // ==========================================
     // Manager Information
-    // ==========================
+    // ==========================================
 
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
@@ -41,9 +51,9 @@ public class ManagerInvitation {
     @Column(name = "phone", length = 15)
     private String phone;
 
-    // ==========================
+    // ==========================================
     // Invitation Information
-    // ==========================
+    // ==========================================
 
     @Column(name = "invitation_token", nullable = false, unique = true)
     private String invitationToken;
@@ -58,9 +68,9 @@ public class ManagerInvitation {
     @Column(name = "activated_at")
     private LocalDateTime activatedAt;
 
-    // ==========================
+    // ==========================================
     // Relationships
-    // ==========================
+    // ==========================================
 
     /**
      * Apartment assigned to the manager.
@@ -70,11 +80,17 @@ public class ManagerInvitation {
     private Apartment apartment;
 
     /**
-     * Building assigned to the manager.
+     * Buildings selected for this invitation.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "building_id", nullable = false)
-    private Building building;
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "managerInvitation",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<ManagerInvitationBuilding> assignedBuildings =
+            new ArrayList<>();
 
     /**
      * Property Admin who created the invitation.
@@ -83,9 +99,9 @@ public class ManagerInvitation {
     @JoinColumn(name = "invited_by", nullable = false)
     private User invitedBy;
 
-    // ==========================
+    // ==========================================
     // Audit Fields
-    // ==========================
+    // ==========================================
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -93,9 +109,9 @@ public class ManagerInvitation {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // ==========================
+    // ==========================================
     // Lifecycle Methods
-    // ==========================
+    // ==========================================
 
     @PrePersist
     protected void onCreate() {
@@ -106,11 +122,14 @@ public class ManagerInvitation {
         if (status == null) {
             status = ManagerInvitationStatus.PENDING;
         }
+
     }
 
     @PreUpdate
     protected void onUpdate() {
+
         updatedAt = LocalDateTime.now();
+
     }
 
 }

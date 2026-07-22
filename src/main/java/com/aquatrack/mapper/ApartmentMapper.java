@@ -41,7 +41,7 @@ public class ApartmentMapper {
                 .city(apartment.getCity())
                 .state(apartment.getState())
                 .pincode(apartment.getPincode())
-                .totalHouseholds(apartment.getTotalHouseholds())
+                .totalBuildings(0L)
                 .createdAt(apartment.getCreatedAt())
                 .updatedAt(apartment.getUpdatedAt())
                 .build();
@@ -59,7 +59,7 @@ public class ApartmentMapper {
                 .apartmentName(apartment.getApartmentName())
                 .city(apartment.getCity())
                 .state(apartment.getState())
-                .totalHouseholds(apartment.getTotalHouseholds())
+                .totalBuildings(0L)
                 .build();
 
     }

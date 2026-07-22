@@ -3,6 +3,7 @@ package com.aquatrack.service;
 import com.aquatrack.dto.manager.CreateManagerInvitationRequestDto;
 import com.aquatrack.dto.manager.ManagerActivationRequestDto;
 import com.aquatrack.dto.manager.ManagerInvitationResponseDto;
+import com.aquatrack.dto.manager.ManagerActivationDetailsResponseDto;
 
 import java.util.List;
 
@@ -44,6 +45,21 @@ public interface ManagerInvitationService {
             Long invitationId
     );
 
+    // ==========================================
+    // Get Activation Details
+    // ==========================================
+
+    /**
+     * Validates the invitation token
+     * and returns manager invitation details.
+     *
+     * @param token Invitation token
+     * @return Manager activation details
+     */
+    ManagerActivationDetailsResponseDto getActivationDetails(
+            String token
+    );
+
     // ==========================
     // Activation
     // ==========================
@@ -56,5 +72,7 @@ public interface ManagerInvitationService {
     void activateManager(
             ManagerActivationRequestDto requestDto
     );
+
+
 
 }

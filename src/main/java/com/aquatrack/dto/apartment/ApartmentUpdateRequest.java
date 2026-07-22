@@ -12,6 +12,10 @@ import lombok.*;
 @ToString
 public class ApartmentUpdateRequest {
 
+    // ==========================================
+    // Apartment Information
+    // ==========================================
+
     @NotBlank(message = "Apartment name is required")
     private String apartmentName;
 

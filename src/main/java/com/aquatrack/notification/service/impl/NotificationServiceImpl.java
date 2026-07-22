@@ -3,11 +3,15 @@ package com.aquatrack.notification.service.impl;
 import com.aquatrack.entity.PropertyRegistrationRequest;
 import com.aquatrack.entity.User;
 import com.aquatrack.notification.model.EmailDetails;
+import com.aquatrack.notification.model.ManagerInvitationEmailModel;
+import com.aquatrack.notification.model.ResidentInvitationEmailModel;
 import com.aquatrack.notification.service.EmailService;
 import com.aquatrack.notification.service.NotificationService;
-import com.aquatrack.notification.template.PropertyAdminReactivatedTemplate;
 import com.aquatrack.notification.template.ForgotPasswordTemplate;
+import com.aquatrack.notification.template.ManagerInvitationTemplate;
+import com.aquatrack.notification.template.ResidentInvitationTemplate;
 import com.aquatrack.notification.template.PasswordResetSuccessTemplate;
+import com.aquatrack.notification.template.PropertyAdminReactivatedTemplate;
 import com.aquatrack.notification.template.PropertyAdminSuspendedTemplate;
 import com.aquatrack.notification.template.RegistrationApprovedTemplate;
 import com.aquatrack.notification.template.RegistrationRejectedTemplate;
@@ -20,7 +24,15 @@ import org.springframework.stereotype.Service;
 public class NotificationServiceImpl
         implements NotificationService {
 
+    // ==========================================
+    // Dependencies
+    // ==========================================
+
     private final EmailService emailService;
+
+    private final ManagerInvitationTemplate managerInvitationTemplate;
+
+    private final ResidentInvitationTemplate residentInvitationTemplate;
 
     // ==========================================
     // Registration Approved Email
@@ -77,6 +89,54 @@ public class NotificationServiceImpl
     }
 
     // ==========================================
+    // Manager Invitation Email
+    // ==========================================
+
+    @Override
+    public void sendManagerInvitationEmail(
+            ManagerInvitationEmailModel model
+    ) {
+
+        String html =
+                managerInvitationTemplate.build(model);
+
+        EmailDetails email =
+                new EmailDetails(
+                        model.getEmail(),
+                        "AquaTrack - Manager Invitation",
+                        html,
+                        true
+                );
+
+        emailService.sendEmail(email);
+
+    }
+
+    // ==========================================
+    // Manager Invitation Email
+    // ==========================================
+
+    @Override
+    public void sendResidentInvitationEmail(
+            ResidentInvitationEmailModel model
+    ) {
+
+        String html =
+                residentInvitationTemplate.build(model);
+
+        EmailDetails email =
+                new EmailDetails(
+                        model.getEmail(),
+                        "AquaTrack - Resident Invitation",
+                        html,
+                        true
+                );
+
+        emailService.sendEmail(email);
+
+    }
+
+    // ==========================================
     // Property Admin Activation Email
     // ==========================================
 
@@ -85,7 +145,7 @@ public class NotificationServiceImpl
             User user
     ) {
 
-        // Will be implemented in future milestone
+        // Future Milestone
 
     }
 
@@ -99,19 +159,11 @@ public class NotificationServiceImpl
             String resetLink
     ) {
 
-        // ==========================================
-        // Build HTML Email
-        // ==========================================
-
         String html =
                 ForgotPasswordTemplate.build(
                         user.getFirstName(),
                         resetLink
                 );
-
-        // ==========================================
-        // Prepare Email
-        // ==========================================
 
         EmailDetails email = new EmailDetails(
                 user.getEmail(),
@@ -119,10 +171,6 @@ public class NotificationServiceImpl
                 html,
                 true
         );
-
-        // ==========================================
-        // Send Email
-        // ==========================================
 
         emailService.sendEmail(email);
 
@@ -137,18 +185,10 @@ public class NotificationServiceImpl
             User user
     ) {
 
-        // ==========================================
-        // Build HTML Email
-        // ==========================================
-
         String html =
                 PasswordResetSuccessTemplate.build(
                         user.getFirstName()
                 );
-
-        // ==========================================
-        // Prepare Email
-        // ==========================================
 
         EmailDetails email = new EmailDetails(
                 user.getEmail(),
@@ -156,10 +196,6 @@ public class NotificationServiceImpl
                 html,
                 true
         );
-
-        // ==========================================
-        // Send Email
-        // ==========================================
 
         emailService.sendEmail(email);
 

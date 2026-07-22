@@ -14,21 +14,21 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"propertyAdmin", "users", "households", "buildings"})
-@EqualsAndHashCode(exclude = {"propertyAdmin", "users", "households", "buildings"})
+@ToString(exclude = {"propertyAdmin", "users", "buildings", "households"})
+@EqualsAndHashCode(exclude = {"propertyAdmin", "users", "buildings", "households"})
 public class Apartment {
 
-    // ==========================
+    // ==========================================
     // Primary Key
-    // ==========================
+    // ==========================================
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ==========================
+    // ==========================================
     // Apartment Information
-    // ==========================
+    // ==========================================
 
     @Column(name = "apartment_name", nullable = false, length = 150)
     private String apartmentName;
@@ -48,46 +48,49 @@ public class Apartment {
     @Column(name = "pincode", nullable = false, length = 10)
     private String pincode;
 
-    @Column(name = "total_households", nullable = false)
-    @Builder.Default
-    private Integer totalHouseholds = 0;
-
-    // ==========================
+    // ==========================================
     // Relationships
-    // ==========================
+    // ==========================================
 
     /**
-     * Property Admin who owns/manages this apartment.
-     * One Property Admin can manage multiple apartments.
+     * One Property Admin can manage multiple Apartment Communities.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "property_admin_id")
+    @JoinColumn(name = "property_admin_id", nullable = false)
     private User propertyAdmin;
 
     /**
-     * Users (Managers / Residents) belonging to this apartment.
+     * Managers and Residents of this Apartment Community.
      */
     @OneToMany(mappedBy = "apartment", fetch = FetchType.LAZY)
     @Builder.Default
     private List<User> users = new ArrayList<>();
 
     /**
-     * Buildings belonging to this apartment.
+     * Buildings inside this Apartment Community.
      */
-    @OneToMany(mappedBy = "apartment", fetch = FetchType.LAZY)
+    @OneToMany(
+            mappedBy = "apartment",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
     @Builder.Default
     private List<Building> buildings = new ArrayList<>();
 
     /**
-     * Households belonging to this apartment.
+     * Households belonging to this Apartment.
+     *
+     * This relationship may be removed later if Household
+     * belongs only to Building.
      */
     @OneToMany(mappedBy = "apartment", fetch = FetchType.LAZY)
     @Builder.Default
     private List<Household> households = new ArrayList<>();
 
-    // ==========================
+    // ==========================================
     // Audit Fields
-    // ==========================
+    // ==========================================
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -95,9 +98,9 @@ public class Apartment {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // ==========================
-    // Lifecycle Methods
-    // ==========================
+    // ==========================================
+    // Lifecycle
+    // ==========================================
 
     @PrePersist
     protected void onCreate() {
@@ -105,13 +108,13 @@ public class Apartment {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
 
-        if (totalHouseholds == null) {
-            totalHouseholds = 0;
-        }
     }
 
     @PreUpdate
     protected void onUpdate() {
+
         updatedAt = LocalDateTime.now();
+
     }
+
 }

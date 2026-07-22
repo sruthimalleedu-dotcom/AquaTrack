@@ -28,4 +28,5 @@ public interface ApartmentService {
             Long apartmentId
     );
 
+
 }

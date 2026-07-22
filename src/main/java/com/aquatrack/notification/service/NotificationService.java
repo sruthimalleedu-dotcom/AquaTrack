@@ -2,6 +2,8 @@ package com.aquatrack.notification.service;
 
 import com.aquatrack.entity.PropertyRegistrationRequest;
 import com.aquatrack.entity.User;
+import com.aquatrack.notification.model.ManagerInvitationEmailModel;
+import com.aquatrack.notification.model.ResidentInvitationEmailModel;
 
 public interface NotificationService {
 
@@ -56,11 +58,28 @@ public interface NotificationService {
     );
 
     // ==========================================
-// Property Admin Reactivated Email
-// ==========================================
+    // Property Admin Reactivated Email
+    // ==========================================
 
     void sendPropertyAdminReactivatedEmail(
             User user
     );
+
+    // ==========================================
+    // Manager Invitation
+    // ==========================================
+
+    void sendManagerInvitationEmail(
+            ManagerInvitationEmailModel model
+    );
+
+    // ==========================================
+    // Manager Invitation
+    // ==========================================
+
+    void sendResidentInvitationEmail(
+            ResidentInvitationEmailModel model
+    );
+
 
 }

@@ -9,6 +9,7 @@ import com.aquatrack.repository.PropertyAdminInvitationRepository;
 import com.aquatrack.repository.UserRepository;
 import com.aquatrack.exception.ResourceNotFoundException;
 import com.aquatrack.notification.service.NotificationService;
+
 import java.time.LocalDateTime;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import lombok.RequiredArgsConstructor;
@@ -129,6 +130,8 @@ public class PropertyAdminServiceImpl
                                 new ResourceNotFoundException(
                                         "Invalid activation token."
                                 ));
+
+
 
         // ==========================================
         // Check Whether Token Is Already Used

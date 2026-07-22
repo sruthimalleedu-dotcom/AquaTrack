@@ -21,6 +21,13 @@ import org.springframework.security.access.AccessDeniedException;
 import com.aquatrack.enums.ManagerInvitationStatus;
 import com.aquatrack.enums.UserRole;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.aquatrack.entity.ManagerBuilding;
+import com.aquatrack.entity.ManagerInvitationBuilding;
+import com.aquatrack.repository.ManagerBuildingRepository;
+import com.aquatrack.repository.ManagerInvitationBuildingRepository;
+import com.aquatrack.notification.model.ManagerInvitationEmailModel;
+import com.aquatrack.notification.service.NotificationService;
+import com.aquatrack.dto.manager.ManagerActivationDetailsResponseDto;
 
 
 import lombok.RequiredArgsConstructor;
@@ -54,6 +61,14 @@ public class ManagerInvitationServiceImpl
 
     private final PasswordEncoder passwordEncoder;
 
+    private final ManagerInvitationBuildingRepository
+            managerInvitationBuildingRepository;
+
+    private final ManagerBuildingRepository
+            managerBuildingRepository;
+
+    private final NotificationService notificationService;
+
     // ==========================
     // Create Manager Invitation
     // ==========================
@@ -70,11 +85,32 @@ public class ManagerInvitationServiceImpl
                 requestDto.getApartmentId()
         );
 
-        // Validate building belongs to apartment
-        Building building = getApartmentBuilding(
-                apartment,
-                requestDto.getBuildingId()
-        );
+        // ==========================================
+// Validate Building Assignment
+// (Temporary: First Building)
+// ==========================================
+
+        if (requestDto.getBuildingIds() == null
+                || requestDto.getBuildingIds().isEmpty()) {
+
+            throw new BadRequestException(
+                    "At least one building must be selected."
+            );
+
+        }
+
+        // ==========================================
+// Validate Selected Buildings
+// ==========================================
+
+        List<Building> buildings = requestDto.getBuildingIds()
+                .stream()
+                .map(buildingId -> getApartmentBuilding(
+                        apartment,
+                        buildingId
+                ))
+                .toList();
+
 
         // Check existing user
         if (userRepository.existsByEmailIgnoreCase(
@@ -109,12 +145,12 @@ public class ManagerInvitationServiceImpl
         LocalDateTime expiresAt = LocalDateTime.now().plusHours(24);
 
         // Convert request to entity
-        ManagerInvitation invitation = managerInvitationMapper.toEntity(
-                requestDto,
-                apartment,
-                building,
-                propertyAdmin
-        );
+        ManagerInvitation invitation =
+                managerInvitationMapper.toEntity(
+                        requestDto,
+                        apartment,
+                        propertyAdmin
+                );
 
         // Set invitation token
         invitation.setInvitationToken(invitationToken);
@@ -128,6 +164,91 @@ public class ManagerInvitationServiceImpl
         // Save manager invitation
         ManagerInvitation savedInvitation =
                 managerInvitationRepository.save(invitation);
+        // ==========================================
+// Save Selected Buildings
+// ==========================================
+
+        for (Building building : buildings) {
+
+            ManagerInvitationBuilding assignment =
+                    ManagerInvitationBuilding.builder()
+                            .managerInvitation(savedInvitation)
+                            .building(building)
+                            .build();
+
+            managerInvitationBuildingRepository.save(
+                    assignment
+            );
+
+        }
+
+        // ==========================================
+// Build Activation URL
+// ==========================================
+
+        String activationUrl =
+                "http://localhost:5173/manager/activate?token="
+                        + invitationToken;
+
+// ==========================================
+// Build Email Model
+// ==========================================
+
+        ManagerInvitationEmailModel emailModel =
+                ManagerInvitationEmailModel.builder()
+
+                        .managerName(
+
+                                requestDto.getFirstName()
+
+                                        + " "
+
+                                        + (requestDto.getLastName() == null
+                                        ? ""
+                                        : requestDto.getLastName())
+
+                        )
+
+                        .email(requestDto.getEmail())
+
+                        .apartmentName(
+                                apartment.getApartmentName()
+                        )
+
+                        .buildingNames(
+
+                                buildings.stream()
+                                        .map(Building::getBuildingName)
+                                        .toList()
+
+                        )
+
+                        .invitedBy(
+
+                                propertyAdmin.getFirstName()
+
+                                        + " "
+
+                                        + (propertyAdmin.getLastName() == null
+                                        ? ""
+                                        : propertyAdmin.getLastName())
+
+                        )
+
+                        .activationUrl(
+                                activationUrl
+                        )
+
+                        .build();
+
+// ==========================================
+// Send Invitation Email
+// ==========================================
+
+        notificationService.sendManagerInvitationEmail(
+                emailModel
+        );
+
         // Return response
         return managerInvitationMapper.toResponseDto(savedInvitation);
 
@@ -172,6 +293,84 @@ public class ManagerInvitationServiceImpl
         }
 
         return managerInvitationMapper.toResponseDto(invitation);
+    }
+
+    // ==========================================
+// Get Activation Details
+// ==========================================
+
+    @Override
+    @Transactional(readOnly = true)
+    public ManagerActivationDetailsResponseDto getActivationDetails(
+            String token
+    ) {
+
+        // ==========================================
+        // Find Invitation
+        // ==========================================
+
+        ManagerInvitation invitation =
+                managerInvitationRepository
+                        .findByInvitationToken(token)
+                        .orElseThrow(() ->
+                                new ResourceNotFoundException(
+                                        "Invalid invitation token."
+                                )
+                        );
+
+        // ==========================================
+        // Validate Status
+        // ==========================================
+
+        if (invitation.getStatus() != ManagerInvitationStatus.PENDING) {
+
+            throw new BadRequestException(
+                    "This invitation has already been used."
+            );
+
+        }
+
+        // ==========================================
+        // Validate Expiry
+        // ==========================================
+
+        if (invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+
+            throw new BadRequestException(
+                    "This invitation has expired."
+            );
+
+        }
+
+        // ==========================================
+        // Build Response
+        // ==========================================
+
+        return ManagerActivationDetailsResponseDto.builder()
+
+                .firstName(invitation.getFirstName())
+
+                .lastName(invitation.getLastName())
+
+                .email(invitation.getEmail())
+
+                .apartmentName(
+                        invitation.getApartment().getApartmentName()
+                )
+
+                .buildingNames(
+
+                        invitation.getAssignedBuildings()
+                                .stream()
+                                .map(assignment ->
+                                        assignment.getBuilding().getBuildingName()
+                                )
+                                .toList()
+
+                )
+
+                .build();
+
     }
 
     // ==========================
@@ -248,11 +447,35 @@ public class ManagerInvitationServiceImpl
                 .role(UserRole.MANAGER)
                 .isActive(true)
                 .apartment(invitation.getApartment())
-                .building(invitation.getBuilding())
                 .build();
 
         // Save manager
         userRepository.save(manager);
+
+        // ==========================================
+// Assign Buildings To Manager
+// ==========================================
+
+        for (ManagerInvitationBuilding assignment :
+
+                invitation.getAssignedBuildings()) {
+
+            ManagerBuilding managerBuilding =
+                    ManagerBuilding.builder()
+                            .manager(manager)
+                            .building(
+                                    assignment.getBuilding()
+                            )
+                            .assignedBy(
+                                    invitation.getInvitedBy()
+                            )
+                            .build();
+
+            managerBuildingRepository.save(
+                    managerBuilding
+            );
+
+        }
 
         // Update invitation
         invitation.setStatus(ManagerInvitationStatus.ACTIVATED);

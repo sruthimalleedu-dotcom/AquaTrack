@@ -27,21 +27,31 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"apartment", "users"})
-@EqualsAndHashCode(exclude = {"apartment", "users"})
+@ToString(exclude = {
+        "apartment",
+        "managerAssignments",
+        "floors",
+        "billingCycles"
+})
+@EqualsAndHashCode(exclude = {
+        "apartment",
+        "managerAssignments",
+        "floors",
+        "billingCycles"
+})
 public class Building {
 
-    // ==========================
+    // ==========================================
     // Primary Key
-    // ==========================
+    // ==========================================
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // ==========================
+    // ==========================================
     // Building Information
-    // ==========================
+    // ==========================================
 
     @Column(name = "building_name", nullable = false, length = 100)
     private String buildingName;
@@ -56,16 +66,16 @@ public class Building {
     @Column(name = "number_of_floors", nullable = false)
     private Integer numberOfFloors;
 
-    @Column(name = "number_of_units", nullable = false)
     @Builder.Default
+    @Column(name = "number_of_units", nullable = false)
     private Integer numberOfUnits = 0;
 
     @Column(name = "description", length = 500)
     private String description;
 
-    // ==========================
+    // ==========================================
     // Relationships
-    // ==========================
+    // ==========================================
 
     /**
      * Apartment to which this building belongs.
@@ -75,16 +85,44 @@ public class Building {
     private Apartment apartment;
 
     /**
-     * Users assigned to this building.
-     * Applicable for Managers and Residents.
+     * Managers assigned to this building.
      */
-    @OneToMany(mappedBy = "building", fetch = FetchType.LAZY)
     @Builder.Default
-    private List<User> users = new ArrayList<>();
+    @OneToMany(
+            mappedBy = "building",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<ManagerBuilding> managerAssignments = new ArrayList<>();
 
-    // ==========================
+    /**
+     * Floors belonging to this building.
+     */
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "building",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Floor> floors = new ArrayList<>();
+
+    /**
+     * Billing cycles of this building.
+     */
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "building",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<BillingCycle> billingCycles = new ArrayList<>();
+
+    // ==========================================
     // Audit Fields
-    // ==========================
+    // ==========================================
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -92,9 +130,9 @@ public class Building {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // ==========================
+    // ==========================================
     // Lifecycle Methods
-    // ==========================
+    // ==========================================
 
     @PrePersist
     protected void onCreate() {
@@ -105,11 +143,14 @@ public class Building {
         if (numberOfUnits == null) {
             numberOfUnits = 0;
         }
+
     }
 
     @PreUpdate
     protected void onUpdate() {
+
         updatedAt = LocalDateTime.now();
+
     }
 
 }

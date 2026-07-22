@@ -59,4 +59,11 @@ public interface BuildingService {
     void deleteBuilding(Long apartmentId,
                         Long buildingId);
 
+    /**
+     * Returns all buildings assigned to the logged-in manager.
+     *
+     * @return List of assigned buildings
+     */
+    List<BuildingResponseDto> getManagerBuildings();
+
 }
