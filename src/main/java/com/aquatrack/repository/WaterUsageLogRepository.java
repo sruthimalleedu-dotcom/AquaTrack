@@ -1,6 +1,7 @@
 package com.aquatrack.repository;
 
 import com.aquatrack.entity.BillingCycle;
+import com.aquatrack.entity.Building;
 import com.aquatrack.entity.Household;
 import com.aquatrack.entity.WaterUsageLog;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -81,6 +82,26 @@ public interface WaterUsageLogRepository extends JpaRepository<WaterUsageLog, Lo
             BillingCycle billingCycle
     );
 
+    // ==========================================
+// Consumption Distribution
+// ==========================================
 
+    /**
+     * Get all water usage logs of a building
+     * for a billing cycle.
+     */
+    List<WaterUsageLog> findByBillingCycleAndHousehold_Floor_Building(
+            BillingCycle billingCycle,
+            Building building
+    );
+
+    /**
+     * Get all water usage logs of a building
+     * for a billing cycle ordered by house number.
+     */
+    List<WaterUsageLog> findByBillingCycleAndHousehold_Floor_BuildingOrderByHousehold_HouseNumberAsc(
+            BillingCycle billingCycle,
+            Building building
+    );
 
 }

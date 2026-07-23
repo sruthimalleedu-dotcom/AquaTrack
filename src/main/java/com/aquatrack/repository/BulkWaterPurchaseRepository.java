@@ -34,5 +34,13 @@ public interface BulkWaterPurchaseRepository extends JpaRepository<BulkWaterPurc
     List<BulkWaterPurchase> findByBuildingInOrderByPurchaseDateDesc(
             List<Building> buildings
     );
+    /**
+     * Get bulk water purchase for a building
+     * and billing cycle.
+     */
+    Optional<BulkWaterPurchase> findByBuildingAndBillingCycle(
+            Building building,
+            BillingCycle billingCycle
+    );
 
 }
