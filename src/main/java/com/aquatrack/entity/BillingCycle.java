@@ -18,11 +18,13 @@ import java.util.List;
 @AllArgsConstructor
 @ToString(exclude = {
         "building",
-        "waterUsageLogs"
+        "waterUsageLogs",
+        "waterBills"
 })
 @EqualsAndHashCode(exclude = {
         "building",
-        "waterUsageLogs"
+        "waterUsageLogs",
+        "waterBills"
 })
 public class BillingCycle {
 
@@ -109,5 +111,14 @@ public class BillingCycle {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "billingCycle",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<WaterBill> waterBills = new ArrayList<>();
 
 }

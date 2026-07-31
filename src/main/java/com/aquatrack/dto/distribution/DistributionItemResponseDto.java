@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DistributionResponseDto {
+public class DistributionItemResponseDto {
 
     private Long householdId;
 
@@ -23,6 +23,10 @@ public class DistributionResponseDto {
 
     private BigDecimal usagePercentage;
 
-    private BigDecimal chargeAmount;
+    // Cost of 1 KL of water
+    private BigDecimal costPerKL;
+
+    // usageKL × costPerKL
+    private BigDecimal consumptionCost;
 
 }

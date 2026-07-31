@@ -27,13 +27,15 @@ import java.util.List;
         "apartment",
         "floor",
         "users",
-        "waterUsageLogs"
+        "waterUsageLogs",
+        "waterBills"
 })
 @EqualsAndHashCode(exclude = {
         "apartment",
         "floor",
         "users",
-        "waterUsageLogs"
+        "waterUsageLogs",
+        "waterBills"
 })
 public class Household {
 
@@ -149,5 +151,14 @@ public class Household {
         updatedAt = LocalDateTime.now();
 
     }
+
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "household",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<WaterBill> waterBills = new ArrayList<>();
 
 }
