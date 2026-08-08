@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   Aqua Enterprise — CSS Custom Properties
+   Light  →  :root
+   Dark   →  .dark
+   ============================================================ */
+
+:root {
+  /* Primary palette */
+  --color-primary:   #0EA5E9;
+  --color-secondary: #06B6D4;
+  --color-accent:    #10B981;
+
+  /* Backgrounds */
+  --color-bg:      #FFFFFF;
+  --color-surface: #F8FAFC;
+  --color-card:    #FFFFFF;
+
+  /* Borders */
+  --color-border: #E2E8F0;
+
+  /* Typography */
+  --color-title: #0F172A;
+  --color-body:  #475569;
+
+  /* Semantic */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger:  #F43F5E;
+}
+
+.dark {
+  /* Primary palette */
+  --color-primary:   #38BDF8;
+  --color-secondary: #22D3EE;
+  --color-accent:    #34D399;
+
+  /* Backgrounds */
+  --color-bg:      #020617;
+  --color-surface: #0F172A;
+  --color-card:    #1E293B;
+
+  /* Borders */
+  --color-border: #334155;
+
+  /* Typography */
+  --color-title: #F8FAFC;
+  --color-body:  #CBD5E1;
+
+  /* Semantic */
+  --color-success: #34D399;
+  --color-warning: #F59E0B;
+  --color-danger:  #F43F5E;
+}
+
+html, body {
+  transition: background 0.3s ease, color 0.3s ease;
+}
