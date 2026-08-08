@@ -18,11 +18,13 @@ import java.util.List;
 @AllArgsConstructor
 @ToString(exclude = {
         "building",
-        "waterUsageLogs"
+        "waterUsageLogs",
+        "invoices"
 })
 @EqualsAndHashCode(exclude = {
         "building",
-        "waterUsageLogs"
+        "waterUsageLogs",
+        "invoices"
 })
 public class BillingCycle {
 
@@ -79,6 +81,16 @@ public class BillingCycle {
             orphanRemoval = true
     )
     private List<WaterUsageLog> waterUsageLogs = new ArrayList<>();
+
+    //Invoice
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "billingCycle",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Invoice> invoices = new ArrayList<>();
 
     // ==========================================
     // Audit Fields

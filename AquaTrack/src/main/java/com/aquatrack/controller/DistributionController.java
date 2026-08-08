@@ -1,12 +1,12 @@
 package com.aquatrack.controller.manager;
 
-import com.aquatrack.dto.distribution.DistributionResponseDto;
+import com.aquatrack.dto.distribution.DistributionSummaryResponseDto;
+import com.aquatrack.dto.distribution.GenerateDistributionRequestDto;
 import com.aquatrack.service.DistributionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/manager/distribution")
@@ -20,25 +20,20 @@ public class DistributionController {
     private final DistributionService distributionService;
 
     // ==========================================
-    // Consumption Distribution
+    // Generate Consumption Distribution
     // ==========================================
 
-    @GetMapping("/{buildingId}/{billingCycleId}")
-    public ResponseEntity<List<DistributionResponseDto>>
-    getConsumptionDistribution(
+    @PostMapping("/generate")
+    public ResponseEntity<DistributionSummaryResponseDto> generateDistribution(
 
-            @PathVariable Long buildingId,
-
-            @PathVariable Long billingCycleId
+            @Valid
+            @RequestBody GenerateDistributionRequestDto request
 
     ) {
 
         return ResponseEntity.ok(
 
-                distributionService.getConsumptionDistribution(
-                        buildingId,
-                        billingCycleId
-                )
+                distributionService.generateDistribution(request)
 
         );
 

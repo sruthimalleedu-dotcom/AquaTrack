@@ -5,7 +5,9 @@ import com.aquatrack.entity.Building;
 import com.aquatrack.entity.Household;
 import com.aquatrack.entity.WaterUsageLog;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -104,4 +106,23 @@ public interface WaterUsageLogRepository extends JpaRepository<WaterUsageLog, Lo
             Building building
     );
 
+    /**
+     * Get all water usage logs of a dashboard
+     */
+    List<WaterUsageLog> findByHouseholdIdOrderByReadingDateAsc(Long householdId);
+
+
+    @Query("""
+        SELECT AVG(w.waterUsage)
+        FROM WaterUsageLog w
+        WHERE w.household.apartment.id =
+        (
+        SELECT h.apartment.id
+        FROM Household h
+        WHERE h.id = :householdId
+        )
+        """)
+    BigDecimal getApartmentAverage(Long householdId);
+
+    Optional<WaterUsageLog> findTopByHouseholdIdOrderByReadingDateDesc(Long householdId);
 }

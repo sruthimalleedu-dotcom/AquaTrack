@@ -27,13 +27,15 @@ import java.util.List;
         "apartment",
         "floor",
         "users",
-        "waterUsageLogs"
+        "waterUsageLogs",
+        "invoices"
 })
 @EqualsAndHashCode(exclude = {
         "apartment",
         "floor",
         "users",
-        "waterUsageLogs"
+        "waterUsageLogs",
+        "invoices"
 })
 public class Household {
 
@@ -116,6 +118,16 @@ public class Household {
             orphanRemoval = true
     )
     private List<WaterUsageLog> waterUsageLogs = new ArrayList<>();
+
+    //Invoice
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "household",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Invoice> invoices = new ArrayList<>();
 
     // ==========================================
     // Audit Fields

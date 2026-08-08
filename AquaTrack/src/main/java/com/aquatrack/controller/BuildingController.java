@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.aquatrack.util.MessageUtil;
 
 /**
  * REST Controller for Building Management.
@@ -26,6 +27,7 @@ public class BuildingController {
     // ==========================
 
     private final BuildingService buildingService;
+    private final MessageUtil messageUtil;
 
     // ==========================
     // Create Building
@@ -39,7 +41,7 @@ public class BuildingController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(
-                        "Building created successfully.",
+                        messageUtil.get("building.created"),
                         buildingService.createBuilding(apartmentId, requestDto)
                 ));
     }
@@ -55,7 +57,7 @@ public class BuildingController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Buildings fetched successfully.",
+                        messageUtil.get("buildings.fetched"),
                         buildingService.getAllBuildings(apartmentId)
                 )
         );
@@ -73,7 +75,7 @@ public class BuildingController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Building fetched successfully.",
+                        messageUtil.get("building.fetched"),
                         buildingService.getBuildingById(apartmentId, buildingId)
                 )
         );
@@ -92,7 +94,7 @@ public class BuildingController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Building updated successfully.",
+                        messageUtil.get("building.updated"),
                         buildingService.updateBuilding(
                                 apartmentId,
                                 buildingId,
@@ -116,7 +118,7 @@ public class BuildingController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Building deleted successfully.",
+                        messageUtil.get("building.deleted"),
                         null
                 )
         );

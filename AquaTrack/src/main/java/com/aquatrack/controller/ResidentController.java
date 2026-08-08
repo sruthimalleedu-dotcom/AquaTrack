@@ -4,20 +4,21 @@ import com.aquatrack.dto.ApiResponse;
 import com.aquatrack.dto.resident.ResidentRequest;
 import com.aquatrack.dto.resident.ResidentResponse;
 import com.aquatrack.service.ResidentService;
+import com.aquatrack.util.MessageUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
+import java.util.List;
 @RestController
 @RequestMapping("/api/households/{householdId}/residents")
 @RequiredArgsConstructor
 public class ResidentController {
 
     private final ResidentService residentService;
-
+    private final MessageUtil messageUtil;
     // ==========================================
     // Create Resident
     // ==========================================
@@ -35,10 +36,9 @@ public class ResidentController {
         );
 
         return ApiResponse.success(
-                "Resident created successfully.",
+                messageUtil.get("resident.created"),
                 response
         );
-
     }
 
     // ==========================================
@@ -56,7 +56,7 @@ public class ResidentController {
                 );
 
         return ApiResponse.success(
-                "Residents fetched successfully.",
+                messageUtil.get("resident.fetched"),
                 residents
         );
 
@@ -78,10 +78,10 @@ public class ResidentController {
         );
 
         return ApiResponse.success(
-                "Resident fetched successfully.",
+                messageUtil.get(
+                        "resident.single.fetched"),
                 resident
         );
-
     }
 
     // ==========================================
@@ -102,10 +102,9 @@ public class ResidentController {
         );
 
         return ApiResponse.success(
-                "Resident updated successfully.",
+                messageUtil.get("resident.updated"),
                 resident
         );
-
     }
 
     // ==========================================
@@ -124,9 +123,8 @@ public class ResidentController {
         );
 
         return ApiResponse.success(
-                "Resident suspended successfully."
+                messageUtil.get("resident.suspended")
         );
-
     }
 
     // ==========================================
@@ -145,9 +143,8 @@ public class ResidentController {
         );
 
         return ApiResponse.success(
-                "Resident reactivated successfully."
+                messageUtil.get("resident.reactivated")
         );
-
     }
 
 }

@@ -1,11 +1,13 @@
 package com.aquatrack.service.impl;
 
-import com.aquatrack.dto.distribution.DistributionResponseDto;
+import com.aquatrack.dto.distribution.DistributionItemResponseDto;
+import com.aquatrack.dto.distribution.DistributionSummaryResponseDto;
+import com.aquatrack.dto.distribution.GenerateDistributionRequestDto;
 import com.aquatrack.entity.*;
 import com.aquatrack.exception.ResourceNotFoundException;
 import com.aquatrack.repository.*;
-import com.aquatrack.util.SecurityUtil;
 import com.aquatrack.service.DistributionService;
+import com.aquatrack.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -35,14 +37,26 @@ public class DistributionServiceImpl implements DistributionService {
     private final ManagerBuildingRepository managerBuildingRepository;
 
     // ==========================================
-    // Consumption Distribution
+    // Generate Consumption Distribution
     // ==========================================
 
     @Override
-    public List<DistributionResponseDto> getConsumptionDistribution(
-            Long buildingId,
-            Long billingCycleId
+    public DistributionSummaryResponseDto generateDistribution(
+            GenerateDistributionRequestDto request
     ) {
+
+        // ==========================================
+        // Request Data
+        // ==========================================
+
+        Long buildingId = request.getBuildingId();
+
+        Long billingCycleId = request.getBillingCycleId();
+
+        BigDecimal commonAreaUsage =
+                request.getCommonAreaUsage() == null
+                        ? BigDecimal.ZERO
+                        : request.getCommonAreaUsage();
 
         // ==========================================
         // Logged-in Manager
@@ -52,7 +66,9 @@ public class DistributionServiceImpl implements DistributionService {
 
         User manager = userRepository.findByEmail(email)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Manager not found.")
+                        new ResourceNotFoundException(
+                                "Manager not found."
+                        )
                 );
 
         // ==========================================
@@ -122,65 +138,136 @@ public class DistributionServiceImpl implements DistributionService {
                         );
 
         if (usageLogs.isEmpty()) {
+
             throw new ResourceNotFoundException(
                     "No water usage found for this billing cycle."
             );
+
         }
 
         // ==========================================
-        // Total Building Usage
+        // Purchase Information
         // ==========================================
 
-        BigDecimal totalUsage = usageLogs.stream()
+        BigDecimal purchasedWater =
+                bulkWaterPurchase.getVolumeKL();
+
+        BigDecimal purchaseCost =
+                bulkWaterPurchase.getTotalCost();
+
+        BigDecimal costPerKL =
+                bulkWaterPurchase.getUnitCost();
+
+        // ==========================================
+        // Household Usage
+        // ==========================================
+
+        BigDecimal householdUsage = usageLogs.stream()
                 .map(WaterUsageLog::getWaterUsage)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        if (totalUsage.compareTo(BigDecimal.ZERO) == 0) {
+        if (householdUsage.compareTo(BigDecimal.ZERO) <= 0) {
+
             throw new ResourceNotFoundException(
-                    "Total water usage is zero."
+                    "Total household water usage is zero."
             );
+
         }
 
         // ==========================================
-        // Total Purchase Cost
+// Water Accounting
+// ==========================================
+
+// Remaining water in the tank after household and
+// common area consumption.
+        BigDecimal remainingWater = purchasedWater
+                .subtract(householdUsage)
+                .subtract(commonAreaUsage);
+
+        if (remainingWater.compareTo(BigDecimal.ZERO) < 0) {
+
+            remainingWater = BigDecimal.ZERO;
+
+        }
+
+// Currently AquaTrack does not have a mechanism to
+// measure actual leakage. Therefore, leakage is
+// considered zero for now.
+//
+// In a future milestone, this can be calculated
+// using tank level readings or dedicated common
+// area water meters.
+        BigDecimal waterLoss = BigDecimal.valueOf(0.00);
+
+        // ==========================================
+        // Analytics
         // ==========================================
 
-        BigDecimal totalPurchaseCost =
-                bulkWaterPurchase.getTotalCost();
+        BigDecimal waterUtilizationPercentage =
+                householdUsage
+                        .multiply(BigDecimal.valueOf(100))
+                        .divide(
+                                purchasedWater,
+                                2,
+                                RoundingMode.HALF_UP
+                        );
 
-        List<DistributionResponseDto> response =
+        BigDecimal recoveryCost =
+                householdUsage.multiply(costPerKL)
+                        .setScale(2, RoundingMode.HALF_UP);
+
+        // ==========================================
+        // Household Distribution
+        // ==========================================
+
+        List<DistributionItemResponseDto> households =
                 new ArrayList<>();
-
-        // ==========================================
-        // Calculate Distribution
-        // ==========================================
 
         for (WaterUsageLog usageLog : usageLogs) {
 
             Household household = usageLog.getHousehold();
 
-            BigDecimal householdUsage = usageLog.getWaterUsage();
+            BigDecimal usageKL = usageLog.getWaterUsage();
 
+            // ==========================================
             // Usage Percentage
-            BigDecimal usagePercentage = householdUsage
+            // ==========================================
+
+            BigDecimal usagePercentage = usageKL
                     .multiply(BigDecimal.valueOf(100))
-                    .divide(totalUsage, 2, RoundingMode.HALF_UP);
+                    .divide(
+                            householdUsage,
+                            2,
+                            RoundingMode.HALF_UP
+                    );
 
-            // Charge Amount
-            BigDecimal chargeAmount = householdUsage
-                    .multiply(totalPurchaseCost)
-                    .divide(totalUsage, 2, RoundingMode.HALF_UP);
+            // ==========================================
+            // Consumption Cost
+            // ==========================================
 
+            BigDecimal consumptionCost = usageKL
+                    .multiply(costPerKL)
+                    .setScale(2, RoundingMode.HALF_UP);
+
+            // ==========================================
             // Resident Name
+            // ==========================================
+
             String residentName = household.getUsers()
                     .stream()
                     .findFirst()
-                    .map(user -> user.getFirstName() + " " + user.getLastName())
+                    .map(user ->
+                            user.getFirstName() + " " + user.getLastName()
+                    )
                     .orElse("N/A");
 
-            response.add(
+            // ==========================================
+            // Add Household Distribution
+            // ==========================================
 
-                    DistributionResponseDto.builder()
+            households.add(
+
+                    DistributionItemResponseDto.builder()
 
                             .householdId(household.getId())
 
@@ -188,11 +275,13 @@ public class DistributionServiceImpl implements DistributionService {
 
                             .residentName(residentName)
 
-                            .usageKL(householdUsage)
+                            .usageKL(usageKL)
 
                             .usagePercentage(usagePercentage)
 
-                            .chargeAmount(chargeAmount)
+                            .costPerKL(costPerKL)
+
+                            .consumptionCost(consumptionCost)
 
                             .build()
 
@@ -200,7 +289,63 @@ public class DistributionServiceImpl implements DistributionService {
 
         }
 
-        return response;
+        // ==========================================
+        // Return Distribution Summary
+        // ==========================================
+
+        return DistributionSummaryResponseDto.builder()
+
+                // ==========================================
+                // Building Information
+                // ==========================================
+
+                .buildingId(building.getId())
+
+                .buildingName(building.getBuildingName())
+
+                .billingCycleId(billingCycle.getId())
+
+                .billingCycleName(billingCycle.getCycleName())
+
+                // ==========================================
+                // Purchase Information
+                // ==========================================
+
+                .purchasedWaterKL(purchasedWater)
+
+                .purchaseCost(purchaseCost)
+
+                .costPerKL(costPerKL)
+
+                // ==========================================
+                // Usage Summary
+                // ==========================================
+
+                .householdUsageKL(householdUsage)
+
+                .commonAreaUsageKL(commonAreaUsage)
+
+                .waterLossKL(waterLoss)
+
+                .remainingWaterKL(remainingWater)
+
+                // ==========================================
+                // Analytics
+                // ==========================================
+
+                .waterUtilizationPercentage(
+                        waterUtilizationPercentage
+                )
+
+                .recoveryCost(recoveryCost)
+
+                // ==========================================
+                // Household Distribution
+                // ==========================================
+
+                .households(households)
+
+                .build();
 
     }
 

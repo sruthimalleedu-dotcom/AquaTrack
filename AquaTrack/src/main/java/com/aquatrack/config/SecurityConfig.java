@@ -95,7 +95,8 @@ public class SecurityConfig {
                         // Property Admin Activation / Registration
                         .requestMatchers(
                                 "/api/property-admin/register",
-                                "/api/property-admin/activate"
+                                "/api/property-admin/activate",
+                                "/api/property-admin/set-password"
                         )
                         .permitAll()
 
@@ -150,6 +151,15 @@ public class SecurityConfig {
                         // ==========================================
                         // All Other APIs
                         // ==========================================
+
+                        .requestMatchers("/api/email/**").permitAll()
+                        .requestMatchers("/api/invoices/**").permitAll()
+
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/invoices/**",
+                                "/api/dashboard/**"
+                        ).permitAll()
 
                         .anyRequest()
                         .authenticated()

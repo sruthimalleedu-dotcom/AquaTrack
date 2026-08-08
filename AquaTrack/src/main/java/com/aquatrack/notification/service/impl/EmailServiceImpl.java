@@ -99,4 +99,32 @@ public class EmailServiceImpl implements EmailService {
             );
         }
     }
+
+    @Override
+    public void sendInvoiceEmail(String to,
+                                 String residentName,
+                                 Long invoiceId,
+                                 Double totalAmount) {
+
+        EmailDetails email = new EmailDetails();
+
+        email.setTo(to);
+        email.setSubject("AquaTrack Water Bill");
+
+        email.setBody("""
+            Dear Resident,
+
+            Your monthly water bill has been generated.
+
+            Download your invoice:
+            http://localhost:8080/api/invoices/%d/pdf
+
+            Thank you,
+            AquaTrack Team
+            """.formatted(invoiceId));
+
+        email.setHtml(false);
+
+        sendEmail(email);
+    }
 }

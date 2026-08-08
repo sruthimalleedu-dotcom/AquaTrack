@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.aquatrack.util.MessageUtil;
 
 import java.util.List;
 
@@ -24,6 +25,7 @@ public class ApartmentController {
     // ==========================================
 
     private final ApartmentService apartmentService;
+    private final MessageUtil messageUtil;
 
     // ==========================================
     // Create Apartment
@@ -39,7 +41,7 @@ public class ApartmentController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(
                         ApiResponse.success(
-                                "🎉 Congratulations! Apartment created successfully.",
+                                messageUtil.get("apartment.created"),
                                 response
                         )
                 );
@@ -59,7 +61,7 @@ public class ApartmentController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Apartment fetched successfully.",
+                        messageUtil.get("apartment.fetched"),
                         response
                 )
         );
@@ -78,7 +80,7 @@ public class ApartmentController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Apartments fetched successfully.",
+                        messageUtil.get("apartments.fetched"),
                         response
                 )
         );
@@ -102,7 +104,7 @@ public class ApartmentController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Apartment updated successfully.",
+                        messageUtil.get("apartment.updated"),
                         response
                 )
         );
@@ -121,7 +123,7 @@ public class ApartmentController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Apartment deleted successfully."
+                        messageUtil.get("apartment.deleted")
                 )
         );
 

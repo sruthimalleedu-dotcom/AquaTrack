@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.aquatrack.util.MessageUtil;
 
 /**
  * REST Controller for Floor Management.
@@ -26,6 +27,7 @@ public class FloorController {
     // ==========================
 
     private final FloorService floorService;
+    private final MessageUtil messageUtil;
 
     // ==========================
     // Create Floor
@@ -39,7 +41,7 @@ public class FloorController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(
-                        "Floor created successfully.",
+                        messageUtil.get("floor.created"),
                         floorService.createFloor(buildingId, requestDto)
                 ));
     }
@@ -55,7 +57,7 @@ public class FloorController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Floors fetched successfully.",
+                        messageUtil.get("floors.fetched"),
                         floorService.getAllFloors(buildingId)
                 )
         );
@@ -73,7 +75,7 @@ public class FloorController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Floor fetched successfully.",
+                        messageUtil.get("floor.fetched"),
                         floorService.getFloorById(buildingId, floorId)
                 )
         );
@@ -92,7 +94,7 @@ public class FloorController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Floor updated successfully.",
+                        messageUtil.get("floor.updated"),
                         floorService.updateFloor(
                                 buildingId,
                                 floorId,
@@ -116,7 +118,7 @@ public class FloorController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Floor deleted successfully.",
+                        messageUtil.get("floor.deleted"),
                         null
                 )
         );

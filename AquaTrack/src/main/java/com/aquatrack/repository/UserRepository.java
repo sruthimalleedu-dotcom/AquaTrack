@@ -46,6 +46,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
             UserRole role
     );
 
+    Optional<User> findFirstByHouseholdAndRole(
+            Household household,
+            UserRole role
+    );
+
     // ==========================================
     // Super Admin Dashboard
     // ==========================================

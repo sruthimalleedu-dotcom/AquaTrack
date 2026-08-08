@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.aquatrack.util.MessageUtil;
 
 /**
  * REST Controller for Household Management.
@@ -26,6 +27,7 @@ public class HouseholdController {
     // ==========================
 
     private final HouseholdService householdService;
+    private final MessageUtil messageUtil;
 
     // ==========================
     // Create Household
@@ -39,11 +41,11 @@ public class HouseholdController {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(
-                        "Household created successfully.",
-                        householdService.createHousehold(
-                                floorId,
-                                request
-                        )
+                                messageUtil.get("household.created"),
+                                householdService.createHousehold(
+                                        floorId,
+                                        request
+                                )
                 ));
     }
 
@@ -58,7 +60,7 @@ public class HouseholdController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Households fetched successfully.",
+                        messageUtil.get("households.fetched"),
                         householdService.getHouseholdsByFloor(
                                 floorId
                         )
@@ -78,7 +80,7 @@ public class HouseholdController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Household fetched successfully.",
+                        messageUtil.get("household.fetched"),
                         householdService.getHouseholdById(
                                 floorId,
                                 householdId
@@ -100,7 +102,7 @@ public class HouseholdController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Household updated successfully.",
+                        messageUtil.get("household.updated"),
                         householdService.updateHousehold(
                                 floorId,
                                 householdId,
@@ -127,7 +129,7 @@ public class HouseholdController {
 
         return ResponseEntity.ok(
                 ApiResponse.success(
-                        "Household deleted successfully.",
+                        messageUtil.get("household.deleted"),
                         null
                 )
         );

@@ -33,16 +33,11 @@ public class CurrentUserServiceImpl
                         .getContext()
                         .getAuthentication();
 
-        CustomUserDetails userDetails =
-                (CustomUserDetails) authentication.getPrincipal();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         return userRepository.findByEmail(
-                        userDetails.getUsername()
-                )
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Authenticated user not found."
-                        ));
+                        userDetails.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("Authenticated user not found."));
 
     }
 
