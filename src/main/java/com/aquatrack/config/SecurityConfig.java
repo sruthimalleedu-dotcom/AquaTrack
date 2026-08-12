@@ -99,6 +99,13 @@ public class SecurityConfig {
                         )
                         .permitAll()
 
+
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/property-admin/set-password"
+                        )
+                        .permitAll()
+
                         .requestMatchers("/api/test/**")
                         .permitAll()
 

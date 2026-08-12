@@ -4,6 +4,10 @@ import com.aquatrack.entity.BillingCycle;
 import com.aquatrack.entity.Building;
 import com.aquatrack.entity.Household;
 import com.aquatrack.entity.WaterUsageLog;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.math.BigDecimal;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
@@ -102,6 +106,74 @@ public interface WaterUsageLogRepository extends JpaRepository<WaterUsageLog, Lo
     List<WaterUsageLog> findByBillingCycleAndHousehold_Floor_BuildingOrderByHousehold_HouseNumberAsc(
             BillingCycle billingCycle,
             Building building
+    );
+
+    // ==========================================
+// Manager Dashboard
+// ==========================================
+
+    /**
+     * Returns total water consumption of all
+     * households belonging to the given buildings.
+     */
+    @Query("""
+    SELECT COALESCE(SUM(w.waterUsage), 0)
+    FROM WaterUsageLog w
+    WHERE w.household.floor.building IN :buildings
+    """)
+    BigDecimal getTotalWaterConsumption(
+            @Param("buildings") List<Building> buildings
+    );
+
+    @Query("""
+    SELECT
+        bc.cycleName,
+        COALESCE(SUM(w.waterUsage), 0)
+    FROM WaterUsageLog w
+    JOIN w.billingCycle bc
+    WHERE w.household.floor.building IN :buildings
+    GROUP BY bc.cycleName, bc.startDate
+    ORDER BY bc.startDate
+""")
+    List<Object[]> getMonthlyWaterConsumption(
+            @Param("buildings") List<Building> buildings
+    );
+
+    @Query("""
+    SELECT
+        b.buildingName,
+        COALESCE(SUM(w.waterUsage), 0)
+    FROM WaterUsageLog w
+    JOIN w.household h
+    JOIN h.floor f
+    JOIN f.building b
+    WHERE b IN :buildings
+    GROUP BY b.id, b.buildingName
+    ORDER BY b.buildingName
+""")
+    List<Object[]> getBuildingUsage(
+            @Param("buildings") List<Building> buildings
+    );
+
+    @Query("""
+    SELECT
+        h.houseNumber,
+        b.buildingName,
+        COALESCE(SUM(w.waterUsage),0)
+    FROM WaterUsageLog w
+    JOIN w.household h
+    JOIN h.floor f
+    JOIN f.building b
+    WHERE b IN :buildings
+    GROUP BY
+        h.id,
+        h.houseNumber,
+        b.buildingName
+    ORDER BY
+        SUM(w.waterUsage) DESC
+""")
+    List<Object[]> getTopConsumers(
+            @Param("buildings") List<Building> buildings
     );
 
 }

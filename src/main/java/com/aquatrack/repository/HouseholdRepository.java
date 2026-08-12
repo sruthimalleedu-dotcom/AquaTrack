@@ -4,6 +4,7 @@ import com.aquatrack.entity.Apartment;
 import com.aquatrack.entity.Building;
 import com.aquatrack.entity.Floor;
 import com.aquatrack.entity.Household;
+import com.aquatrack.enums.HouseholdStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -75,8 +76,8 @@ public interface HouseholdRepository extends JpaRepository<Household, Long> {
     );
 
     // ==========================================
-    // Manager Dashboard
-    // ==========================================
+// Manager Dashboard
+// ==========================================
 
     long countByFloor_BuildingIn(
             List<Building> buildings
@@ -84,6 +85,11 @@ public interface HouseholdRepository extends JpaRepository<Household, Long> {
 
     List<Household> findByFloor_BuildingIn(
             List<Building> buildings
+    );
+
+    long countByFloor_BuildingInAndStatus(
+            List<Building> buildings,
+            HouseholdStatus status
     );
 
 }
